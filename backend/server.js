@@ -5,7 +5,7 @@ const app = express();
 // CORS config MEJORADO
 app.use(cors({
   origin: [
-    'https://mi-tienda-pwa-kned.vercel.app/', // Tu frontend en Render
+    'https://mi-tienda-pwa-kned.vercel.app', // Tu frontend en Render
     'http://localhost:3000',
     'http://localhost:3001'
   ],
@@ -52,4 +52,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
+
 
