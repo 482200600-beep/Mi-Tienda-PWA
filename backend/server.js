@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('express');
+const cors = require('cors'); // ✅ Cambiado de 'express' a 'cors'
 const app = express();
 
 // CORS config
@@ -10,7 +10,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Ruta de health check (OBLIGATORIA para Render)
+// Ruta de health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
