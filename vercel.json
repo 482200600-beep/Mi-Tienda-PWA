@@ -9,18 +9,18 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/static/(.*)",
-      "dest": "/build/static/$1"
+      "source": "/static/(.*)",
+      "destination": "/build/static/$1"
     },
     {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json))",
-      "dest": "/build/$1"
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json))",
+      "destination": "/build/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/build/index.html"
+      "source": "/(.*)",
+      "destination": "/build/index.html"
     }
   ],
   "headers": [
