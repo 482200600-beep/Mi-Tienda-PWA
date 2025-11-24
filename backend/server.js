@@ -1,25 +1,28 @@
 const express = require('express');
-const cors = require('cors'); // ✅ Cambiado de 'express' a 'cors'
+const cors = require('cors');
 const app = express();
 
-// CORS config
+// CORS config MEJORADO
 app.use(cors({
-  origin: '*', // Temporalmente permite todos
-  credentials: true
+  origin: [
+    'https://tu-frontend.onrender.com', // Tu frontend en Render
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
+
+// Manejar preflight OPTIONS requests
+app.options('*', cors());
 
 app.use(express.json());
 
-// Ruta de health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
-
-// Ruta de productos
+// Ruta de productos (ya funciona)
 app.get('/api/productos', (req, res) => {
   console.log('📦 Petición recibida en /api/productos');
   
-  // Datos de prueba
   const productos = [
     {
       id: 1,
@@ -32,7 +35,7 @@ app.get('/api/productos', (req, res) => {
       id: 2,
       nombre: "Smartphone",
       precio: 599,
-      descripcion: "Teléfono inteligente última generación", 
+      descripcion: "Teléfono inteligente última generación",
       imagen: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=200&fit=crop"
     }
   ];
@@ -44,10 +47,8 @@ app.get('/api/productos', (req, res) => {
   });
 });
 
-// Puerto para Render
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🌐 Health check: http://0.0.0.0:${PORT}/health`);
 });
