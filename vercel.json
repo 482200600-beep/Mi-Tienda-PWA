@@ -15,7 +15,7 @@
       "destination": "/build/static/$1"
     },
     {
-      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json))",
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))"
       "destination": "/build/$1"
     },
     {
