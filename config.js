@@ -1,7 +1,5 @@
-// Cambia esto para usar tu backend en Render
-export const API_URL = 'https://mi-tienda-pwa.onrender.com';
-
-// O si prefieres mantener desarrollo/producción:
-// export const API_URL = process.env.NODE_ENV === 'production' 
-//   ? 'https://mi-tienda-pwa.onrender.com'
-//   : 'http://localhost:3001';
+// Configuración para desarrollo y producción
+export const API_URL = 
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3001'  // Desarrollo local
+    : 'https://mi-tienda-pwa.onrender.com';  // Producción
