@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import Carrito from './components/Carrito';
+import { API_URL } from './config'; // Importa la URL base
 
 function App() {
   const [productos, setProductos] = useState([]);
@@ -28,14 +29,26 @@ function App() {
 
   const obtenerProductos = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/productos');
+      console.log('Conectando a:', `${API_URL}/api/productos`);
+      
+      const response = await fetch(`${API_URL}/api/productos`);
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Datos recibidos:', data);
       
       if (data.success) {
         setProductos(data.productos);
+      } else {
+        console.error('Error del servidor:', data.error);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error completo:', error);
+      alert('No se pudieron cargar los productos. Verifica la conexión.');
     } finally {
       setLoading(false);
     }
@@ -43,7 +56,7 @@ function App() {
 
   const obtenerCarrito = async (usuarioId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/carrito/${usuarioId}`);
+      const response = await fetch(`${API_URL}/api/carrito/${usuarioId}`);
       const data = await response.json();
       
       if (data.success) {
@@ -61,7 +74,7 @@ function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/api/carrito/agregar', {
+      const response = await fetch(`${API_URL}/api/carrito/agregar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +89,6 @@ function App() {
       const data = await response.json();
       
       if (data.success) {
-        // Recargar carrito
         obtenerCarrito(usuario.sub);
         alert('Producto agregado al carrito!');
       } else {
@@ -155,27 +167,36 @@ function App() {
 
       {/* Productos */}
       <div className="productos-grid">
-        {productos.map(producto => (
-          <div key={producto.id} className="producto-card">
-            <img 
-              src={producto.imagen} 
-              alt={producto.nombre}
-              onError={(e) => {
-                e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop';
-              }}
-            />
-            <h3>{producto.nombre}</h3>
-            <p className="precio">${producto.precio}</p>
-            <p className="descripcion">{producto.descripcion}</p>
-            <button 
-              className="btn-agregar"
-              onClick={() => agregarAlCarrito(producto)}
-              disabled={!usuario}
-            >
-              {usuario ? '🛒 Agregar al Carrito' : '🔒 Inicia sesión para comprar'}
+        {productos.length > 0 ? (
+          productos.map(producto => (
+            <div key={producto.id} className="producto-card">
+              <img 
+                src={producto.imagen} 
+                alt={producto.nombre}
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop';
+                }}
+              />
+              <h3>{producto.nombre}</h3>
+              <p className="precio">${producto.precio}</p>
+              <p className="descripcion">{producto.descripcion}</p>
+              <button 
+                className="btn-agregar"
+                onClick={() => agregarAlCarrito(producto)}
+                disabled={!usuario}
+              >
+                {usuario ? '🛒 Agregar al Carrito' : '🔒 Inicia sesión para comprar'}
+              </button>
+            </div>
+          ))
+        ) : (
+          <div className="no-productos">
+            <p>No hay productos disponibles</p>
+            <button onClick={obtenerProductos} className="btn-reintentar">
+              Reintentar
             </button>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
