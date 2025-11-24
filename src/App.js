@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import Carrito from './components/Carrito';
-import { API_URL } from './config'; // Importa la URL base
+import { API_URL } from './config';
 
 function App() {
   const [productos, setProductos] = useState([]);
@@ -29,17 +29,32 @@ function App() {
 
   const obtenerProductos = async () => {
     try {
-      console.log('Conectando a:', `${API_URL}/api/productos`);
+      console.log('🔗 Conectando a:', `${API_URL}/api/productos`);
       
-      const response = await fetch(`${API_URL}/api/productos`);
-      console.log('Response status:', response.status);
+      // Agregar timeout y mejor manejo
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
+      
+      const response = await fetch(`${API_URL}/api/productos`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response ok:', response.ok);
       
       if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log('Datos recibidos:', data);
+      console.log('✅ Datos recibidos:', data);
       
       if (data.success) {
         setProductos(data.productos);
@@ -47,8 +62,15 @@ function App() {
         console.error('Error del servidor:', data.error);
       }
     } catch (error) {
-      console.error('Error completo:', error);
-      alert('No se pudieron cargar los productos. Verifica la conexión.');
+      console.error('💥 Error completo:', error);
+      console.error('💥 Error name:', error.name);
+      console.error('💥 Error message:', error.message);
+      
+      if (error.name === 'AbortError') {
+        alert('⏰ Timeout: El servidor tardó demasiado en responder');
+      } else {
+        alert('❌ Error de conexión. Verifica la consola para más detalles.');
+      }
     } finally {
       setLoading(false);
     }
@@ -56,14 +78,22 @@ function App() {
 
   const obtenerCarrito = async (usuarioId) => {
     try {
+      console.log('🛒 Obteniendo carrito para usuario:', usuarioId);
       const response = await fetch(`${API_URL}/api/carrito/${usuarioId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('🛒 Datos carrito:', data);
       
       if (data.success) {
         setCarrito(data.carrito);
       }
     } catch (error) {
       console.error('Error obteniendo carrito:', error);
+      // No mostrar alerta aquí para no molestar al usuario
     }
   };
 
@@ -74,6 +104,8 @@ function App() {
     }
 
     try {
+      console.log('➕ Agregando producto al carrito:', producto.id);
+      
       const response = await fetch(`${API_URL}/api/carrito/agregar`, {
         method: 'POST',
         headers: {
@@ -87,21 +119,23 @@ function App() {
       });
 
       const data = await response.json();
+      console.log('📦 Respuesta agregar carrito:', data);
       
       if (data.success) {
         obtenerCarrito(usuario.sub);
-        alert('Producto agregado al carrito!');
+        alert('✅ Producto agregado al carrito!');
       } else {
-        alert('Error: ' + data.error);
+        alert('❌ Error: ' + data.error);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al agregar al carrito');
+      console.error('💥 Error al agregar al carrito:', error);
+      alert('❌ Error al agregar al carrito. Verifica la conexión.');
     }
   };
 
   const handleLogin = (userData) => {
     setUsuario(userData);
+    localStorage.setItem('usuario', JSON.stringify(userData));
   };
 
   const handleLogout = () => {
@@ -116,7 +150,7 @@ function App() {
   if (loading) {
     return (
       <div className="App">
-        <h1>Mi Tienda PWA</h1>
+        <h1>🛍️ Mi Tienda PWA</h1>
         <div className="loading">🔄 Cargando productos...</div>
       </div>
     );
@@ -191,9 +225,9 @@ function App() {
           ))
         ) : (
           <div className="no-productos">
-            <p>No hay productos disponibles</p>
+            <p>😔 No hay productos disponibles</p>
             <button onClick={obtenerProductos} className="btn-reintentar">
-              Reintentar
+              🔄 Reintentar
             </button>
           </div>
         )}
