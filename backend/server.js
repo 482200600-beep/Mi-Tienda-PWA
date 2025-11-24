@@ -6,8 +6,6 @@ const app = express();
 app.use(cors({
   origin: [
     'https://mi-tienda-pwa-kned.vercel.app', // Tu frontend en Render
-    'http://localhost:3000',
-    'http://localhost:3001'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -52,5 +50,6 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
+
 
 
