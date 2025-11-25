@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { API_URL } from './config';
-// En Carrito.js, asegúrate de recibir la prop usuario
-function Carrito({ carrito, total, onActualizarCarrito, onCerrar, usuario }) {
-  // ... el resto del código corregido que te envié anteriormente
-}
+
 function Carrito({ carrito, total, onActualizarCarrito, onCerrar, usuario }) {
   const [actualizando, setActualizando] = useState(false);
 
@@ -110,6 +107,9 @@ function Carrito({ carrito, total, onActualizarCarrito, onCerrar, usuario }) {
                 src={item.productoImagen || item.imagen} 
                 alt={item.productoNombre || item.nombre}
                 className="carrito-item-imagen"
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=150&h=150&fit=crop';
+                }}
               />
               <div className="carrito-item-info">
                 <h4>{item.productoNombre || item.nombre}</h4>
