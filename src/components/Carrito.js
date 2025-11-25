@@ -6,7 +6,7 @@ function Carrito({ carrito, total, onActualizarCarrito, onCerrar }) {
   const eliminarDelCarrito = async (itemId) => {
     setActualizando(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/carrito/${itemId}`, {
+      const response = await fetch(`https://render.com/docs/web-services#port-binding/${itemId}`, {
         method: 'DELETE'
       });
       
