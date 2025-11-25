@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { API_URL } from './config';
-
+// En Carrito.js, asegúrate de recibir la prop usuario
+function Carrito({ carrito, total, onActualizarCarrito, onCerrar, usuario }) {
+  // ... el resto del código corregido que te envié anteriormente
+}
 function Carrito({ carrito, total, onActualizarCarrito, onCerrar, usuario }) {
   const [actualizando, setActualizando] = useState(false);
 
