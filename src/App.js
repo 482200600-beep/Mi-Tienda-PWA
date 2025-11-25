@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import Carrito from './components/Carrito';
-import { API_URL } from './config';
+
+// Configuración directa sin archivo config.js
+const API_URL = process.env.REACT_APP_API_URL || 'https://mi-tienda-pwa.onrender.com';
 
 function App() {
   const [productos, setProductos] = useState([]);
