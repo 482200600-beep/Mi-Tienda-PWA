@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import Carrito from './components/Carrito';
+import ProductList from './components/ProductList'; // Import corregido
 
 // Configuración directa sin archivo config.js
 const API_URL = process.env.REACT_APP_API_URL || 'https://mi-tienda-pwa.onrender.com';
@@ -197,39 +198,12 @@ function App() {
         />
       )}
 
-      {/* Productos */}
-      <div className="productos-grid">
-        {productos.length > 0 ? (
-          productos.map(producto => (
-            <div key={producto.id} className="producto-card">
-              <img 
-                src={producto.imagen} 
-                alt={producto.nombre}
-                onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop';
-                }}
-              />
-              <h3>{producto.nombre}</h3>
-              <p className="precio">${producto.precio}</p>
-              <p className="descripcion">{producto.descripcion}</p>
-              <button 
-                className="btn-agregar"
-                onClick={() => agregarAlCarrito(producto)}
-                disabled={!usuario}
-              >
-                {usuario ? '🛒 Agregar al Carrito' : '🔒 Inicia sesión para comprar'}
-              </button>
-            </div>
-          ))
-        ) : (
-          <div className="no-productos">
-            <p>😔 No hay productos disponibles</p>
-            <button onClick={obtenerProductos} className="btn-reintentar">
-              🔄 Reintentar
-            </button>
-          </div>
-        )}
-      </div>
+      {/* ProductList Component */}
+      <ProductList 
+        products={productos}
+        usuario={usuario}
+        onAgregarCarrito={agregarAlCarrito}
+      />
     </div>
   );
 }
