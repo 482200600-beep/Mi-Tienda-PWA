@@ -29,12 +29,12 @@ function App() {
 
   const obtenerProductos = async () => {
     try {
-      console.log('🔗 Conectando a:', `${API_URL}/`); // CAMBIADO: usa raíz en lugar de /api/productos
+      console.log('🔗 Conectando a:', `${API_URL}/`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const response = await fetch(`${API_URL}/`, { // CAMBIADO: usa raíz
+      const response = await fetch(`${API_URL}/`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -184,14 +184,14 @@ function App() {
         </div>
       </header>
 
-      {/* Carrito - SOLO UNA VEZ */}
+      {/* Carrito */}
       {mostrarCarrito && usuario && (
         <Carrito 
           carrito={carrito}
           total={totalCarrito}
           onActualizarCarrito={() => obtenerCarrito(usuario.sub)}
           onCerrar={() => setMostrarCarrito(false)}
-          usuario={usuario} // ✅ AÑADIDO: pasar el usuario como prop
+          usuario={usuario}
         />
       )}
 
