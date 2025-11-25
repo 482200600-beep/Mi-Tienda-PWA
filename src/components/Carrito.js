@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { API_URL } from './config';
+
+// Configuración directa en Carrito.js
+const API_URL = process.env.REACT_APP_API_URL || 'https://mi-tienda-pwa.onrender.com';
 
 function Carrito({ carrito, total, onActualizarCarrito, onCerrar, usuario }) {
   const [actualizando, setActualizando] = useState(false);
