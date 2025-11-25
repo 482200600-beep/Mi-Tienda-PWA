@@ -1,3 +1,4 @@
+// src/App.test.js - DEBERÍA TENER ESTO
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
