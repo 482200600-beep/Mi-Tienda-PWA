@@ -29,13 +29,12 @@ function App() {
 
   const obtenerProductos = async () => {
     try {
-      console.log('🔗 Conectando a:', `${API_URL}/api/productos`);
+      console.log('🔗 Conectando a:', `${API_URL}/`); // CAMBIADO: usa raíz en lugar de /api/productos
       
-      // Agregar timeout y mejor manejo
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const response = await fetch(`${API_URL}/api/productos`, {
+      const response = await fetch(`${API_URL}/`, { // CAMBIADO: usa raíz
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -47,7 +46,6 @@ function App() {
       clearTimeout(timeoutId);
       
       console.log('📊 Response status:', response.status);
-      console.log('📊 Response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
@@ -63,8 +61,6 @@ function App() {
       }
     } catch (error) {
       console.error('💥 Error completo:', error);
-      console.error('💥 Error name:', error.name);
-      console.error('💥 Error message:', error.message);
       
       if (error.name === 'AbortError') {
         alert('⏰ Timeout: El servidor tardó demasiado en responder');
@@ -93,7 +89,6 @@ function App() {
       }
     } catch (error) {
       console.error('Error obteniendo carrito:', error);
-      // No mostrar alerta aquí para no molestar al usuario
     }
   };
 
@@ -189,13 +184,14 @@ function App() {
         </div>
       </header>
 
-      {/* Carrito */}
+      {/* Carrito - SOLO UNA VEZ */}
       {mostrarCarrito && usuario && (
         <Carrito 
           carrito={carrito}
           total={totalCarrito}
           onActualizarCarrito={() => obtenerCarrito(usuario.sub)}
           onCerrar={() => setMostrarCarrito(false)}
+          usuario={usuario} // ✅ AÑADIDO: pasar el usuario como prop
         />
       )}
 
