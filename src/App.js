@@ -56,6 +56,22 @@ function App() {
       descripcion: "iPhone 15 Pro 128GB, cámara 48MP",
       imagen: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop",
       categoria: "smartphones"
+    },
+    {
+      id: "3",
+      nombre: "Auriculares Inalámbricos",
+      precio: 199,
+      descripcion: "Auriculares con cancelación de ruido y 30h de batería",
+      imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
+      categoria: "audio"
+    },
+    {
+      id: "4",
+      nombre: "Smartwatch Pro",
+      precio: 349,
+      descripcion: "Reloj inteligente con monitor de salud y GPS",
+      imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
+      categoria: "wearables"
     }
   ];
 
@@ -102,31 +118,60 @@ function App() {
   };
 
   if (loading) {
-    return <div className="App"><h1>🛍️ Mi Tienda PWA</h1><div>Cargando...</div></div>;
+    return (
+      <div className="App">
+        <div className="loading-screen">
+          <div className="loading-spinner"></div>
+          <h2>Cargando productos...</h2>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="App">
       <header className="header">
-        <h1>🛍️ Mi Tienda PWA</h1>
-        <div className="header-actions">
-          {usuario ? (
-            <div className="usuario-info">
-              <img src={usuario.picture} alt="Avatar" className="usuario-avatar" />
-              <span>Hola, {usuario.given_name}</span>
-              <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
-            </div>
-          ) : (
-            <Login onLogin={handleLogin} />
-          )}
+        <div className="header-content">
+          <div className="logo">
+            <i className="fas fa-store"></i>
+            <span>Místico Store</span>
+          </div>
+          <div className="header-actions">
+            {usuario ? (
+              <div className="usuario-info">
+                <img src={usuario.picture} alt="Avatar" className="usuario-avatar" />
+                <span>Hola, {usuario.given_name}</span>
+                <button onClick={handleLogout} className="btn btn-secondary">
+                  <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+              </div>
+            ) : (
+              <Login onLogin={handleLogin} />
+            )}
+            <button className="btn-carrito">
+              <i className="fas fa-shopping-cart"></i>
+              <span className="carrito-badge">{carrito.length}</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <ProductList 
-        products={productos}
-        usuario={usuario}
-        onAgregarCarrito={agregarAlCarrito}
-      />
+      <main className="main-content">
+        <div className="section-header">
+          <h2>Nuestros Productos</h2>
+          <p>Descubre la mejor selección de tecnología</p>
+        </div>
+        
+        <ProductList 
+          products={productos}
+          usuario={usuario}
+          onAgregarCarrito={agregarAlCarrito}
+        />
+      </main>
+
+      <footer className="app-footer">
+        <p>&copy; 2024 Místico Store. Todos los derechos reservados.</p>
+      </footer>
     </div>
   );
 }
