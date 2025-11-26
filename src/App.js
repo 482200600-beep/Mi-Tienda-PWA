@@ -4,11 +4,6 @@ import Login from './components/Login';
 import Carrito from './components/Carrito';
 import ProductList from './components/ProductList';
 
-// ✅ URL CORREGIDA - Usar proxy en desarrollo, Render en producción
-const API_URL = process.env.NODE_ENV === 'development' 
-  ? '' // Usará el proxy definido en package.json
-  : 'https://mi-tienda-pwa.onrender.com';
-
 function App() {
   const [productos, setProductos] = useState([]);
   const [carrito, setCarrito] = useState([]);
@@ -16,156 +11,138 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [mostrarCarrito, setMostrarCarrito] = useState(false);
 
-  // Cargar usuario desde localStorage al iniciar
+  // ✅ DATOS LOCALES DE PRODUCTOS
+  const productosLocales = [
+    {
+      id: 1,
+      nombre: "Laptop Gaming",
+      precio: 1200,
+      descripcion: "Laptop para gaming de alta performance con RGB",
+      imagen: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop"
+    },
+    {
+      id: 2,
+      nombre: "Smartphone Pro",
+      precio: 799,
+      descripcion: "Teléfono inteligente última generación, 5G, 128GB",
+      imagen: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop"
+    },
+    {
+      id: 3,
+      nombre: "Tablet Digital",
+      precio: 459,
+      descripcion: "Tablet perfecta para trabajo y entretenimiento",
+      imagen: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=300&fit=crop"
+    },
+    {
+      id: 4,
+      nombre: "Auriculares Wireless",
+      precio: 199,
+      descripcion: "Sonido premium con cancelación de ruido",
+      imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop"
+    },
+    {
+      id: 5,
+      nombre: "Smart Watch",
+      precio: 299,
+      descripcion: "Reloj inteligente con monitor de salud",
+      imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop"
+    },
+    {
+      id: 6,
+      nombre: "Cámara Profesional",
+      precio: 1200,
+      descripcion: "Cámara DSLR para fotografía profesional",
+      imagen: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=300&fit=crop"
+    }
+  ];
+
+  // Cargar usuario y productos al iniciar
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem('usuario');
+    const carritoGuardado = localStorage.getItem('carrito');
+    
     if (usuarioGuardado) {
       setUsuario(JSON.parse(usuarioGuardado));
     }
-    obtenerProductos();
+    
+    if (carritoGuardado) {
+      setCarrito(JSON.parse(carritoGuardado));
+    }
+    
+    // ✅ Usar datos locales inmediatamente
+    setProductos(productosLocales);
+    setLoading(false);
+    
+    console.log('✅ App cargada con productos locales');
   }, []);
 
-  // Cargar carrito cuando el usuario cambia
+  // Guardar carrito en localStorage cuando cambie
   useEffect(() => {
-    if (usuario) {
-      obtenerCarrito(usuario.sub);
+    if (carrito.length > 0) {
+      localStorage.setItem('carrito', JSON.stringify(carrito));
     }
-  }, [usuario]);
+  }, [carrito]);
 
-  const obtenerProductos = async () => {
-    try {
-      // ✅ RUTA RELATIVA cuando usamos proxy
-      const url = process.env.NODE_ENV === 'development' 
-        ? '/api/productos' 
-        : `${API_URL}/api/productos`;
-      
-      console.log('🔗 Conectando a:', url);
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      console.log('📊 Response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('✅ Datos recibidos:', data);
-      
-      if (data.success) {
-        setProductos(data.productos);
-      } else {
-        throw new Error('Error del servidor: ' + data.error);
-      }
-    } catch (error) {
-      console.error('💥 Error cargando productos:', error);
-      
-      // ✅ DATOS DE PRUEBA SI FALLA LA CONEXIÓN
-      console.log('🔄 Usando datos de prueba...');
-      const productosPrueba = [
-        {
-          id: 1,
-          nombre: "Laptop Gaming",
-          precio: 1200,
-          descripcion: "Laptop para gaming de alta performance",
-          imagen: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=300&h=200&fit=crop"
-        },
-        {
-          id: 2,
-          nombre: "Smartphone",
-          precio: 599,
-          descripcion: "Teléfono inteligente última generación", 
-          imagen: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=200&fit=crop"
-        },
-        {
-          id: 3,
-          nombre: "Auriculares Bluetooth",
-          precio: 199,
-          descripcion: "Sonido de alta calidad sin cables",
-          imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop"
-        }
-      ];
-      setProductos(productosPrueba);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const obtenerCarrito = async (usuarioId) => {
-    if (!usuarioId) return;
-    
-    try {
-      const url = process.env.NODE_ENV === 'development'
-        ? `/api/carrito/${usuarioId}`
-        : `${API_URL}/api/carrito/${usuarioId}`;
-        
-      console.log('🛒 Obteniendo carrito:', url);
-      const response = await fetch(url);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setCarrito(data.carrito);
-        }
-      }
-    } catch (error) {
-      console.error('Error obteniendo carrito:', error);
-    }
-  };
-
-  const agregarAlCarrito = async (producto) => {
+  // ✅ FUNCIÓN SIMPLIFICADA - Agregar al carrito LOCAL
+  const agregarAlCarrito = (producto) => {
     if (!usuario) {
       alert('Por favor inicia sesión para agregar productos al carrito');
       return;
     }
 
-    try {
-      const url = process.env.NODE_ENV === 'development'
-        ? '/api/carrito/agregar'
-        : `${API_URL}/api/carrito/agregar`;
-      
-      console.log('➕ Agregando producto:', producto.id);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          usuarioId: usuario.sub,
-          productoId: producto.id,
-          cantidad: 1
-        })
-      });
+    console.log('➕ Agregando producto:', producto.nombre);
+    
+    // Buscar si el producto ya está en el carrito
+    const itemExistenteIndex = carrito.findIndex(
+      item => item.productoId === producto.id && item.usuarioId === usuario.sub
+    );
 
-      const data = await response.json();
-      
-      if (data.success) {
-        obtenerCarrito(usuario.sub);
-        alert('✅ Producto agregado al carrito!');
-      } else {
-        alert('❌ Error: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Error al agregar al carrito:', error);
-      alert('✅ Producto agregado (modo prueba)');
-      // En modo prueba, simulamos que se agregó
+    let nuevoCarrito;
+    
+    if (itemExistenteIndex !== -1) {
+      // Actualizar cantidad si ya existe
+      nuevoCarrito = [...carrito];
+      nuevoCarrito[itemExistenteIndex].cantidad += 1;
+    } else {
+      // Agregar nuevo item al carrito
       const nuevoItem = {
-        id: Date.now(),
+        id: Date.now().toString(),
+        usuarioId: usuario.sub,
         productoId: producto.id,
+        cantidad: 1,
         productoNombre: producto.nombre,
         productoPrecio: producto.precio,
         productoImagen: producto.imagen,
-        cantidad: 1
+        productoDescripcion: producto.descripcion,
+        fechaAgregado: new Date().toISOString()
       };
-      setCarrito(prev => [...prev, nuevoItem]);
+      nuevoCarrito = [...carrito, nuevoItem];
     }
+
+    setCarrito(nuevoCarrito);
+    alert('✅ Producto agregado al carrito!');
+  };
+
+  // ✅ Actualizar cantidad en el carrito
+  const actualizarCantidadCarrito = (itemId, nuevaCantidad) => {
+    if (nuevaCantidad < 1) {
+      // Eliminar item si cantidad es 0
+      const nuevoCarrito = carrito.filter(item => item.id !== itemId);
+      setCarrito(nuevoCarrito);
+    } else {
+      // Actualizar cantidad
+      const nuevoCarrito = carrito.map(item =>
+        item.id === itemId ? { ...item, cantidad: nuevaCantidad } : item
+      );
+      setCarrito(nuevoCarrito);
+    }
+  };
+
+  // ✅ Eliminar item del carrito
+  const eliminarDelCarrito = (itemId) => {
+    const nuevoCarrito = carrito.filter(item => item.id !== itemId);
+    setCarrito(nuevoCarrito);
   };
 
   const handleLogin = (userData) => {
@@ -175,6 +152,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('usuario');
+    localStorage.removeItem('carrito');
     setUsuario(null);
     setCarrito([]);
   };
@@ -186,15 +164,17 @@ function App() {
     return (
       <div className="App">
         <h1>🛍️ Mi Tienda PWA</h1>
-        <div className="loading">🔄 Cargando productos...</div>
+        <div className="loading">🔄 Cargando...</div>
       </div>
     );
   }
 
   return (
     <div className="App">
+      {/* Header */}
       <header className="header">
         <h1>🛍️ Mi Tienda PWA</h1>
+        
         <div className="header-actions">
           {usuario ? (
             <>
@@ -222,21 +202,29 @@ function App() {
         </div>
       </header>
 
+      {/* Carrito */}
       {mostrarCarrito && usuario && (
         <Carrito 
           carrito={carrito}
           total={totalCarrito}
-          onActualizarCarrito={() => obtenerCarrito(usuario.sub)}
+          onActualizarCantidad={actualizarCantidadCarrito}
+          onEliminarItem={eliminarDelCarrito}
           onCerrar={() => setMostrarCarrito(false)}
-          usuario={usuario}
         />
       )}
 
+      {/* ProductList */}
       <ProductList 
         products={productos}
         usuario={usuario}
         onAgregarCarrito={agregarAlCarrito}
       />
+
+      {/* Info Footer */}
+      <footer className="app-footer">
+        <p>✅ Tienda funcionando con datos locales</p>
+        <p>🛒 Carrito guardado en tu navegador</p>
+      </footer>
     </div>
   );
 }
