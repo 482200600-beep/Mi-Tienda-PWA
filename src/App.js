@@ -2,15 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import Carrito from './components/Carrito';
-import ProductList from './components/ProductList'; // Import corregido
+import ProductList from './components/ProductList';
 
 // Configuración directa sin archivo config.js
 const API_URL = process.env.REACT_APP_API_URL || 'https://mi-tienda-pwa.onrender.com';
-
-
-// Configuración directa sin archivo config.js
-
-
 
 function App() {
   const [productos, setProductos] = useState([]);
@@ -37,12 +32,12 @@ function App() {
 
   const obtenerProductos = async () => {
     try {
-      console.log('🔗 Conectando a:', `${API_URL}/`);
+      console.log('🔗 Conectando a:', `${API_URL}/api/productos`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const response = await fetch(`${API_URL}/`, {
+      const response = await fetch(`${API_URL}/api/productos`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
