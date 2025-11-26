@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// ✅ TUS CREDENCIALES REALES - CORREGIDAS
+// ✅ TUS CREDENCIALES REALES
 const firebaseConfig = {
   apiKey: "AIzaSyB4i0eBOLPF38fwsGNuxLWtzflG4YtSkVc",
   authDomain: "e-commerce-pwa-con-react.firebaseapp.com",
@@ -14,6 +14,6 @@ const firebaseConfig = {
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 
-// Inicializar Firestore (base de datos)
+// Inicializar Firestore
 export const db = getFirestore(app);
 export default app;
