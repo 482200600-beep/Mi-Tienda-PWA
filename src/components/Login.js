@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 
 const CLIENT_ID = "12965070830-mjmnsh17fp13kr2471vjpnf46799jedt.apps.googleusercontent.com";
 
