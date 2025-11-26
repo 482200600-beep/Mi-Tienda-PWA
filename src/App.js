@@ -7,6 +7,11 @@ import ProductList from './components/ProductList'; // Import corregido
 // Configuración directa sin archivo config.js
 const API_URL = process.env.REACT_APP_API_URL || 'https://mi-tienda-pwa.onrender.com';
 
+
+// Configuración directa sin archivo config.js
+
+
+
 function App() {
   const [productos, setProductos] = useState([]);
   const [carrito, setCarrito] = useState([]);
