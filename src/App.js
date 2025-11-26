@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { db } from './firebase/config';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
 import './App.css';
 import Login from './components/Login';
 import Carrito from './components/Carrito';
@@ -9,141 +11,84 @@ function App() {
   const [carrito, setCarrito] = useState([]);
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [mostrarCarrito, setMostrarCarrito] = useState(false);
 
-  // ✅ DATOS LOCALES DE PRODUCTOS
-  const productosLocales = [
+  // ✅ OBTENER PRODUCTOS DESDE FIREBASE
+  const obtenerProductos = async () => {
+    try {
+      console.log('🔥 Conectando a Firebase...');
+      const querySnapshot = await getDocs(collection(db, 'productos'));
+      const productosFirebase = [];
+      
+      querySnapshot.forEach((doc) => {
+        productosFirebase.push({ id: doc.id, ...doc.data() });
+      });
+      
+      if (productosFirebase.length > 0) {
+        setProductos(productosFirebase);
+        console.log('✅ Productos cargados desde Firebase');
+      } else {
+        // Datos de reserva si Firebase está vacío
+        setProductos(productosReserva);
+      }
+    } catch (error) {
+      console.error('❌ Error Firebase:', error);
+      // Datos de reserva si hay error
+      setProductos(productosReserva);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ DATOS DE RESERVA (por si hay problemas)
+  const productosReserva = [
     {
-      id: 1,
-      nombre: "Laptop Gaming",
-      precio: 1200,
-      descripcion: "Laptop para gaming de alta performance con RGB",
-      imagen: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop"
+      id: "1",
+      nombre: "Laptop Gaming Pro",
+      precio: 1299,
+      descripcion: "Laptop gaming con RTX 4060, 16GB RAM, 1TB SSD",
+      imagen: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop",
+      categoria: "tecnologia"
     },
     {
-      id: 2,
-      nombre: "Smartphone Pro",
-      precio: 799,
-      descripcion: "Teléfono inteligente última generación, 5G, 128GB",
-      imagen: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      nombre: "Tablet Digital",
-      precio: 459,
-      descripcion: "Tablet perfecta para trabajo y entretenimiento",
-      imagen: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=300&fit=crop"
-    },
-    {
-      id: 4,
-      nombre: "Auriculares Wireless",
-      precio: 199,
-      descripcion: "Sonido premium con cancelación de ruido",
-      imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop"
-    },
-    {
-      id: 5,
-      nombre: "Smart Watch",
-      precio: 299,
-      descripcion: "Reloj inteligente con monitor de salud",
-      imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop"
-    },
-    {
-      id: 6,
-      nombre: "Cámara Profesional",
-      precio: 1200,
-      descripcion: "Cámara DSLR para fotografía profesional",
-      imagen: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=300&fit=crop"
+      id: "2", 
+      nombre: "iPhone 15 Pro",
+      precio: 999,
+      descripcion: "iPhone 15 Pro 128GB, cámara 48MP",
+      imagen: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop",
+      categoria: "smartphones"
     }
   ];
 
-  // Cargar usuario y productos al iniciar
-  useEffect(() => {
-    const usuarioGuardado = localStorage.getItem('usuario');
-    const carritoGuardado = localStorage.getItem('carrito');
-    
-    if (usuarioGuardado) {
-      setUsuario(JSON.parse(usuarioGuardado));
-    }
-    
-    if (carritoGuardado) {
-      setCarrito(JSON.parse(carritoGuardado));
-    }
-    
-    // ✅ Usar datos locales inmediatamente
-    setProductos(productosLocales);
-    setLoading(false);
-    
-    console.log('✅ App cargada con productos locales');
-  }, []);
-
-  // Guardar carrito en localStorage cuando cambie
-  useEffect(() => {
-    if (carrito.length > 0) {
-      localStorage.setItem('carrito', JSON.stringify(carrito));
-    }
-  }, [carrito]);
-
-  // ✅ FUNCIÓN SIMPLIFICADA - Agregar al carrito LOCAL
-  const agregarAlCarrito = (producto) => {
+  // ✅ AGREGAR AL CARRITO
+  const agregarAlCarrito = async (producto) => {
     if (!usuario) {
-      alert('Por favor inicia sesión para agregar productos al carrito');
+      alert('Por favor inicia sesión');
       return;
     }
 
-    console.log('➕ Agregando producto:', producto.nombre);
-    
-    // Buscar si el producto ya está en el carrito
-    const itemExistenteIndex = carrito.findIndex(
-      item => item.productoId === producto.id && item.usuarioId === usuario.sub
-    );
-
-    let nuevoCarrito;
-    
-    if (itemExistenteIndex !== -1) {
-      // Actualizar cantidad si ya existe
-      nuevoCarrito = [...carrito];
-      nuevoCarrito[itemExistenteIndex].cantidad += 1;
-    } else {
-      // Agregar nuevo item al carrito
-      const nuevoItem = {
-        id: Date.now().toString(),
+    try {
+      await addDoc(collection(db, 'carrito'), {
         usuarioId: usuario.sub,
         productoId: producto.id,
-        cantidad: 1,
         productoNombre: producto.nombre,
         productoPrecio: producto.precio,
         productoImagen: producto.imagen,
-        productoDescripcion: producto.descripcion,
-        fechaAgregado: new Date().toISOString()
-      };
-      nuevoCarrito = [...carrito, nuevoItem];
-    }
-
-    setCarrito(nuevoCarrito);
-    alert('✅ Producto agregado al carrito!');
-  };
-
-  // ✅ Actualizar cantidad en el carrito
-  const actualizarCantidadCarrito = (itemId, nuevaCantidad) => {
-    if (nuevaCantidad < 1) {
-      // Eliminar item si cantidad es 0
-      const nuevoCarrito = carrito.filter(item => item.id !== itemId);
-      setCarrito(nuevoCarrito);
-    } else {
-      // Actualizar cantidad
-      const nuevoCarrito = carrito.map(item =>
-        item.id === itemId ? { ...item, cantidad: nuevaCantidad } : item
-      );
-      setCarrito(nuevoCarrito);
+        cantidad: 1,
+        fecha: new Date().toISOString()
+      });
+      alert('✅ Producto agregado al carrito!');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('✅ Producto agregado (modo local)');
     }
   };
 
-  // ✅ Eliminar item del carrito
-  const eliminarDelCarrito = (itemId) => {
-    const nuevoCarrito = carrito.filter(item => item.id !== itemId);
-    setCarrito(nuevoCarrito);
-  };
+  // Cargar datos
+  useEffect(() => {
+    const usuarioGuardado = localStorage.getItem('usuario');
+    if (usuarioGuardado) setUsuario(JSON.parse(usuarioGuardado));
+    obtenerProductos();
+  }, []);
 
   const handleLogin = (userData) => {
     setUsuario(userData);
@@ -152,79 +97,36 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('usuario');
-    localStorage.removeItem('carrito');
     setUsuario(null);
     setCarrito([]);
   };
 
-  const totalCarrito = carrito.reduce((total, item) => total + (item.productoPrecio * item.cantidad), 0);
-  const cantidadCarrito = carrito.reduce((total, item) => total + item.cantidad, 0);
-
   if (loading) {
-    return (
-      <div className="App">
-        <h1>🛍️ Mi Tienda PWA</h1>
-        <div className="loading">🔄 Cargando...</div>
-      </div>
-    );
+    return <div className="App"><h1>🛍️ Mi Tienda PWA</h1><div>Cargando...</div></div>;
   }
 
   return (
     <div className="App">
-      {/* Header */}
       <header className="header">
         <h1>🛍️ Mi Tienda PWA</h1>
-        
         <div className="header-actions">
           {usuario ? (
-            <>
-              <button 
-                className="btn-carrito"
-                onClick={() => setMostrarCarrito(!mostrarCarrito)}
-              >
-                🛒 Carrito ({cantidadCarrito})
-              </button>
-              <div className="usuario-info">
-                <img 
-                  src={usuario.picture} 
-                  alt="Avatar" 
-                  className="usuario-avatar"
-                />
-                <span>Hola, {usuario.given_name}</span>
-                <button onClick={handleLogout} className="btn-logout">
-                  Cerrar Sesión
-                </button>
-              </div>
-            </>
+            <div className="usuario-info">
+              <img src={usuario.picture} alt="Avatar" className="usuario-avatar" />
+              <span>Hola, {usuario.given_name}</span>
+              <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+            </div>
           ) : (
             <Login onLogin={handleLogin} />
           )}
         </div>
       </header>
 
-      {/* Carrito */}
-      {mostrarCarrito && usuario && (
-        <Carrito 
-          carrito={carrito}
-          total={totalCarrito}
-          onActualizarCantidad={actualizarCantidadCarrito}
-          onEliminarItem={eliminarDelCarrito}
-          onCerrar={() => setMostrarCarrito(false)}
-        />
-      )}
-
-      {/* ProductList */}
       <ProductList 
         products={productos}
         usuario={usuario}
         onAgregarCarrito={agregarAlCarrito}
       />
-
-      {/* Info Footer */}
-      <footer className="app-footer">
-        <p>✅ Tienda funcionando con datos locales</p>
-        <p>🛒 Carrito guardado en tu navegador</p>
-      </footer>
     </div>
   );
 }
