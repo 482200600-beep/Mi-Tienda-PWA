@@ -11,6 +11,7 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // Datos de prueba
   const productosReserva = [
@@ -191,7 +192,7 @@ function App() {
         ></div>
       </nav>
 
-      {/* Hero Section con Video */}
+      {/* Hero Section con Video - PARTE CORREGIDA */}
       <section id="inicio" className="hero">
         <video 
           autoPlay 
@@ -199,9 +200,10 @@ function App() {
           loop 
           playsInline
           className="hero-video"
+          onLoadedData={() => setVideoLoaded(true)}
+          onError={() => setVideoLoaded(false)}
         >
-          <source src="/hero-background.mp4" type="video/mp4" />
-          {/* Fallback por si el video no carga */}
+          <source src={`${process.env.PUBLIC_URL}/hero-background.mp4`} type="video/mp4" />
           Tu navegador no soporta el elemento video.
         </video>
         <div className="hero-content">
