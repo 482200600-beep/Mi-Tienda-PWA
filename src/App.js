@@ -191,8 +191,19 @@ function App() {
         ></div>
       </nav>
 
-      {/* Hero Section con imagen */}
+      {/* Hero Section con Video */}
       <section id="inicio" className="hero">
+        <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          className="hero-video"
+        >
+          <source src="/hero-background.mp4" type="video/mp4" />
+          {/* Fallback por si el video no carga */}
+          Tu navegador no soporta el elemento video.
+        </video>
         <div className="hero-content">
           <h1>Bienvenido a Místico Store</h1>
           <p>Descubre tecnología de otro mundo</p>
