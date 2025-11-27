@@ -1,3 +1,4 @@
+// Fuerza actualización - ${Date.now()}
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase/config';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
