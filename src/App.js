@@ -10,33 +10,9 @@ function App() {
   const [carrito, setCarrito] = useState([]);
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // ✅ OBTENER PRODUCTOS DESDE FIREBASE
-  const obtenerProductos = async () => {
-    try {
-      console.log('🔥 Conectando a Firebase...');
-      const querySnapshot = await getDocs(collection(db, 'productos'));
-      const productosFirebase = [];
-      
-      querySnapshot.forEach((doc) => {
-        productosFirebase.push({ id: doc.id, ...doc.data() });
-      });
-      
-      if (productosFirebase.length > 0) {
-        setProductos(productosFirebase);
-        console.log('✅ Productos cargados desde Firebase');
-      } else {
-        setProductos(productosReserva);
-      }
-    } catch (error) {
-      console.error('❌ Error Firebase:', error);
-      setProductos(productosReserva);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ DATOS DE RESERVA
+  // Datos de prueba
   const productosReserva = [
     {
       id: "1",
@@ -61,21 +37,30 @@ function App() {
       descripcion: "Auriculares con cancelación de ruido y 30h de batería",
       imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
       categoria: "audio"
-    },
-    {
-      id: "4",
-      nombre: "Smartwatch Pro",
-      precio: 349,
-      descripcion: "Reloj inteligente con monitor de salud y GPS",
-      imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-      categoria: "wearables"
     }
   ];
 
-  // ✅ AGREGAR AL CARRITO
+  const obtenerProductos = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'productos'));
+      const productosFirebase = [];
+      
+      querySnapshot.forEach((doc) => {
+        productosFirebase.push({ id: doc.id, ...doc.data() });
+      });
+      
+      setProductos(productosFirebase.length > 0 ? productosFirebase : productosReserva);
+    } catch (error) {
+      console.error('Error:', error);
+      setProductos(productosReserva);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const agregarAlCarrito = async (producto) => {
     if (!usuario) {
-      alert('Por favor inicia sesión');
+      alert('Por favor inicia sesión para agregar productos al carrito');
       return;
     }
 
@@ -91,62 +76,31 @@ function App() {
       });
       
       setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
-      mostrarNotificacion('✅ Producto agregado al carrito!');
+      alert('✅ Producto agregado al carrito!');
     } catch (error) {
       console.error('Error:', error);
       setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
-      mostrarNotificacion('✅ Producto agregado (modo local)');
+      alert('✅ Producto agregado al carrito!');
     }
   };
 
-  const mostrarNotificacion = (mensaje) => {
-    const notificacion = document.createElement('div');
-    notificacion.className = 'notificacion';
-    notificacion.textContent = mensaje;
-    document.body.appendChild(notificacion);
-    
-    setTimeout(() => notificacion.classList.add('show'), 100);
-    
-    setTimeout(() => {
-      notificacion.classList.remove('show');
-      setTimeout(() => {
-        if (document.body.contains(notificacion)) {
-          document.body.removeChild(notificacion);
-        }
-      }, 300);
-    }, 3000);
-  };
-
-  // Observador de intersección para animaciones
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.3 });
-
-    document.querySelectorAll('.scroll-section').forEach(section => {
-      observer.observe(section);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Navegación suave
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  // Cargar datos
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem('usuario');
     if (usuarioGuardado) setUsuario(JSON.parse(usuarioGuardado));
     obtenerProductos();
+
+    // Navbar scroll effect
+    const handleScroll = () => {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogin = (userData) => {
@@ -158,6 +112,18 @@ function App() {
     localStorage.removeItem('usuario');
     setUsuario(null);
     setCarrito([]);
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMenuOpen(false);
+    }
   };
 
   if (loading) {
@@ -173,40 +139,26 @@ function App() {
 
   return (
     <div className="App">
-      {/* Video de fondo solo en hero */}
-      <div className="hero-video">
-        <video 
-          autoPlay 
-          muted 
-          loop
-          playsInline
-        >
-          <source src="/hero-background.mp4" type="video/mp4" />
-          Tu navegador no soporta el elemento video.
-        </video>
-        <div className="hero-overlay"></div>
-      </div>
-
-      {/* Barra de navegación */}
+      {/* Navbar */}
       <nav className="navbar" id="navbar">
         <a href="#inicio" className="nav-logo" onClick={(e) => { e.preventDefault(); scrollToSection('inicio'); }}>
           Místico Store
         </a>
         
-        <div className="menu-toggle" id="mobile-menu">
+        <div className={`menu-toggle ${menuOpen ? 'active' : ''}`} onClick={toggleMenu}>
           <span></span>
           <span></span>
           <span></span>
         </div>
         
-        <ul className="nav-links" id="nav-links">
+        <ul className={`nav-links ${menuOpen ? 'active' : ''}`}>
           <li><a href="#productos" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>Productos</a></li>
           <li><a href="#categorias" onClick={(e) => { e.preventDefault(); scrollToSection('categorias'); }}>Categorías</a></li>
           <li><a href="#ofertas" onClick={(e) => { e.preventDefault(); scrollToSection('ofertas'); }}>Ofertas</a></li>
           <li><a href="#contacto" onClick={(e) => { e.preventDefault(); scrollToSection('contacto'); }}>Contacto</a></li>
-          <li>
+          <li className="nav-auth">
             {usuario ? (
-              <div className="usuario-nav">
+              <div className="usuario-info">
                 <img src={usuario.picture} alt="Avatar" className="usuario-avatar" />
                 <span>Hola, {usuario.given_name}</span>
                 <button onClick={handleLogout} className="login-btn">
@@ -224,13 +176,22 @@ function App() {
             </button>
           </li>
         </ul>
-      </nav>
-      
-      {/* Overlay para menú móvil */}
-      <div className="nav-overlay" id="nav-overlay"></div>
 
-      {/* Sección Hero */}
-      <section id="inicio" className="hero scroll-section">
+        <div 
+          className={`nav-overlay ${menuOpen ? 'active' : ''}`} 
+          onClick={toggleMenu}
+        ></div>
+      </nav>
+
+      {/* Hero Section con video */}
+      <section id="inicio" className="hero">
+        <div className="hero-video">
+          <video autoPlay muted loop playsInline>
+            <source src="/hero-background.mp4" type="video/mp4" />
+            Tu navegador no soporta el elemento video.
+          </video>
+          <div className="hero-overlay"></div>
+        </div>
         <div className="hero-content">
           <h1>Bienvenido a Místico Store</h1>
           <p>Descubre tecnología de otro mundo</p>
@@ -241,69 +202,58 @@ function App() {
       </section>
 
       {/* Sección Productos */}
-      <section id="productos" className="scroll-section">
-        <div className="section-content">
-          <div className="card">
+      <section id="productos" className="section productos-section">
+        <div className="container">
+          <div className="section-header">
             <h2>Nuestros Productos</h2>
-            <p>Explora nuestra selección premium de tecnología y dispositivos innovadores. Cada producto ha sido cuidadosamente seleccionado para ofrecerte la mejor experiencia.</p>
-            <div className="internal-nav">
-              <a href="#tecnologia">Tecnología</a>
-              <a href="#smartphones">Smartphones</a>
-              <a href="#audio">Audio</a>
-              <a href="#wearables">Wearables</a>
-            </div>
+            <p>Los mejores productos tecnológicos al mejor precio</p>
           </div>
-          
-          {/* Lista de productos */}
-          <div className="products-container">
-            <ProductList 
-              products={productos}
-              usuario={usuario}
-              onAgregarCarrito={agregarAlCarrito}
-            />
-          </div>
+          <ProductList 
+            products={productos}
+            usuario={usuario}
+            onAgregarCarrito={agregarAlCarrito}
+          />
         </div>
       </section>
 
       {/* Sección Categorías */}
-      <section id="categorias" className="scroll-section">
-        <div className="section-content">
-          <div className="card">
+      <section id="categorias" className="section categorias-section">
+        <div className="container">
+          <div className="section-header">
             <h2>Categorías</h2>
-            <p>Navega por nuestras categorías especializadas para encontrar exactamente lo que necesitas.</p>
-            <div className="categorias-grid">
-              <div className="categoria-card">
-                <i className="fas fa-laptop"></i>
-                <h3>Tecnología</h3>
-                <p>Laptops, PCs y accesorios</p>
-              </div>
-              <div className="categoria-card">
-                <i className="fas fa-mobile-alt"></i>
-                <h3>Smartphones</h3>
-                <p>Teléfonos y tablets</p>
-              </div>
-              <div className="categoria-card">
-                <i className="fas fa-headphones"></i>
-                <h3>Audio</h3>
-                <p>Auriculares y altavoces</p>
-              </div>
-              <div className="categoria-card">
-                <i className="fas fa-clock"></i>
-                <h3>Wearables</h3>
-                <p>Relojes y bandas inteligentes</p>
-              </div>
+            <p>Encuentra lo que necesitas</p>
+          </div>
+          <div className="categorias-grid">
+            <div className="categoria-card">
+              <i className="fas fa-laptop"></i>
+              <h3>Tecnología</h3>
+              <p>Laptops, PCs y accesorios</p>
+            </div>
+            <div className="categoria-card">
+              <i className="fas fa-mobile-alt"></i>
+              <h3>Smartphones</h3>
+              <p>Teléfonos y tablets</p>
+            </div>
+            <div className="categoria-card">
+              <i className="fas fa-headphones"></i>
+              <h3>Audio</h3>
+              <p>Auriculares y altavoces</p>
+            </div>
+            <div className="categoria-card">
+              <i className="fas fa-clock"></i>
+              <h3>Wearables</h3>
+              <p>Relojes inteligentes</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Sección Ofertas */}
-      <section id="ofertas" className="scroll-section">
-        <div className="section-content">
-          <div className="card">
+      <section id="ofertas" className="section ofertas-section">
+        <div className="container">
+          <div className="section-content">
             <h2>Ofertas Especiales</h2>
-            <p>No te pierdas nuestras promociones exclusivas y descuentos limitados en productos seleccionados.</p>
-            <p>¡Solo por tiempo limitado!</p>
+            <p>Descuentos exclusivos por tiempo limitado</p>
             <a href="#productos" className="btn" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>
               Ver Ofertas
             </a>
@@ -312,15 +262,16 @@ function App() {
       </section>
 
       {/* Sección Contacto */}
-      <section id="contacto" className="scroll-section">
-        <div className="section-content">
-          <div className="card">
+      <section id="contacto" className="section contacto-section">
+        <div className="container">
+          <div className="section-content">
             <h2>Contacto</h2>
-            <p><strong>📧 Correo:</strong> contacto@misticostore.com</p>
-            <p><strong>📞 Teléfono:</strong> +52 498 981 5100</p>
-            <p><strong>📍 Ubicación:</strong> Guadalupe, Zacatecas, México</p>
-            <p style={{marginTop: '1rem'}}>¿Tienes preguntas sobre nuestros productos? Contáctanos y te ayudaremos.</p>
-            <a href="mailto:contacto@misticostore.com" className="btn" style={{marginTop: '1rem'}}>
+            <div className="contacto-info">
+              <p><i className="fas fa-envelope"></i> contacto@misticostore.com</p>
+              <p><i className="fas fa-phone"></i> +52 498 981 5100</p>
+              <p><i className="fas fa-map-marker-alt"></i> Guadalupe, Zacatecas, México</p>
+            </div>
+            <a href="mailto:contacto@misticostore.com" className="btn">
               Enviar Mensaje
             </a>
           </div>
@@ -328,7 +279,9 @@ function App() {
       </section>
 
       <footer>
-        <small>&copy; 2024 Místico Store. Todos los derechos reservados.</small>
+        <div className="container">
+          <small>&copy; 2024 Místico Store. Todos los derechos reservados.</small>
+        </div>
       </footer>
     </div>
   );
