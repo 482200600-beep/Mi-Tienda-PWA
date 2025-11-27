@@ -288,21 +288,17 @@ body {
   color: #7890a7;
 }
 
-/* NUEVOS ESTILOS PARA SECCIONES QUE ABARCAN TODA LA PANTALLA */
+/* Secciones con scroll */
 .scroll-section {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 0;
+  justify-content: center;
+  padding: 2rem;
   opacity: 0;
   transform: translateY(50px);
   transition: all 0.8s ease;
   position: relative;
-  border-radius: 0;
-  margin: 0;
-  width: 100%;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .scroll-section.visible {
@@ -327,71 +323,10 @@ body {
   background: rgba(70, 40, 150, 0.9);
 }
 
-.content-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-  max-width: 1400px;
+.section-content {
+  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 4rem;
-  width: 100%;
-  min-height: 60vh;
-}
-
-.text-content {
-  padding: 2rem;
-}
-
-.image-content {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-}
-
-/* Contenedor 3D */
-.model-3d-container {
-  position: relative;
-  width: 500px;
-  height: 500px;
-  border-radius: 0;
-  overflow: hidden;
-  filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
-  transition: all 0.5s ease;
-  background: transparent;
-}
-
-.model-3d-container:hover {
-  transform: scale(1.02);
-  filter: drop-shadow(0 20px 40px rgba(106, 17, 203, 0.6));
-}
-
-/* Canvas de Three.js */
-.model-3d-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  cursor: grab;
-}
-
-.model-3d-canvas:active {
-  cursor: grabbing;
-}
-
-/* Alternar posición de modelo 3D y texto */
-.image-left .content-wrapper {
-  grid-template-columns: 1fr 1fr;
-}
-
-.image-right .content-wrapper {
-  grid-template-columns: 1fr 1fr;
-  direction: rtl;
-}
-
-.image-right .text-content {
-  direction: ltr;
 }
 
 /* Tarjetas TRANSPARENTES - CUADRADAS */
@@ -421,15 +356,6 @@ body {
   color: #e0e0e0;
   font-size: 1.1rem;
   line-height: 1.7;
-}
-
-.card ul {
-  margin-top: 1.5rem;
-  padding-left: 1.5rem;
-}
-
-.card li {
-  margin-bottom: 0.8rem;
 }
 
 .card:hover {
@@ -490,12 +416,10 @@ body {
 /* Contenedor de productos */
 .products-container {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem 4rem;
+  margin-top: 3rem;
 }
 
-/* Grid de productos ADAPTADO */
+/* Grid de productos */
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -602,6 +526,44 @@ body {
   transform: none;
 }
 
+/* Grid de categorías */
+.categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.categoria-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  text-align: center;
+  border-radius: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.categoria-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.categoria-card i {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.categoria-card h3 {
+  color: #b0c0d1;
+  margin-bottom: 0.5rem;
+}
+
+.categoria-card p {
+  color: #e0e0e0;
+}
+
 /* Pantalla de carga */
 .loading-screen {
   display: flex;
@@ -679,41 +641,7 @@ footer {
   display: block;
 }
 
-/* RESPONSIVE MEJORADO */
-@media (max-width: 1200px) {
-  .content-wrapper {
-    max-width: 100%;
-    gap: 3rem;
-    padding: 0 3rem;
-  }
-  
-  .model-3d-container {
-    width: 400px;
-    height: 400px;
-  }
-}
-
-@media (max-width: 968px) {
-  .content-wrapper {
-    grid-template-columns: 1fr !important;
-    gap: 2rem;
-    padding: 0 2rem;
-  }
-  
-  .model-3d-container {
-    width: 350px;
-    height: 350px;
-  }
-  
-  .image-right .content-wrapper {
-    direction: ltr;
-  }
-  
-  .products-container {
-    padding: 2rem;
-  }
-}
-
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .menu-toggle {
     display: flex;
@@ -787,17 +715,12 @@ footer {
     min-height: 300px;
   }
   
-  .model-3d-container {
-    width: 300px;
-    height: 300px;
-  }
-  
-  .content-wrapper {
-    padding: 0 1.5rem;
+  .scroll-section {
+    padding: 1rem;
   }
   
   .products-container {
-    padding: 1rem;
+    padding: 1rem 0;
   }
   
   .productos-grid {
@@ -813,6 +736,10 @@ footer {
     margin: 0.5rem 0;
     width: 100%;
     text-align: center;
+  }
+  
+  .categorias-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -834,21 +761,8 @@ footer {
     min-height: 250px;
   }
   
-  .model-3d-container {
-    width: 250px;
-    height: 250px;
-  }
-  
   .hero-content {
     padding: 2rem 1.5rem;
     margin: 0 1rem;
-  }
-  
-  .text-content {
-    padding: 1.5rem;
-  }
-  
-  .content-wrapper {
-    padding: 0 1rem;
   }
 }
