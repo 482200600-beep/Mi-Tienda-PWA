@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from './firebase/config';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import './App.css';
@@ -11,7 +11,6 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const videoRef = useRef(null);
 
   // Datos de prueba
   const productosReserva = [
@@ -30,23 +29,24 @@ function App() {
       descripcion: "iPhone 15 Pro 128GB, cámara 48MP",
       imagen: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop",
       categoria: "smartphones"
+    },
+    {
+      id: "3",
+      nombre: "Auriculares Inalámbricos",
+      precio: 199,
+      descripcion: "Auriculares con cancelación de ruido y 30h de batería",
+      imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
+      categoria: "audio"
+    },
+    {
+      id: "4",
+      nombre: "Smartwatch Pro",
+      precio: 349,
+      descripcion: "Reloj inteligente con monitor de salud y GPS",
+      imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
+      categoria: "wearables"
     }
   ];
-
-  useEffect(() => {
-    // Forzar la reproducción del video
-    if (videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.log('Error reproduciendo video:', error);
-        // Si falla, intentar con usuario interaction
-        document.addEventListener('click', () => {
-          if (videoRef.current) {
-            videoRef.current.play();
-          }
-        }, { once: true });
-      });
-    }
-  }, []);
 
   const obtenerProductos = async () => {
     try {
@@ -97,6 +97,7 @@ function App() {
     if (usuarioGuardado) setUsuario(JSON.parse(usuarioGuardado));
     obtenerProductos();
 
+    // Navbar scroll effect
     const handleScroll = () => {
       const navbar = document.getElementById('navbar');
       if (window.scrollY > 50) {
@@ -190,22 +191,8 @@ function App() {
         ></div>
       </nav>
 
-      {/* Hero Section con video - CORREGIDO */}
+      {/* Hero Section con imagen */}
       <section id="inicio" className="hero">
-        <div className="hero-video">
-          <video 
-            ref={videoRef}
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-            webkit-playsinline="true"
-          >
-            <source src="/hero-background.mp4" type="video/mp4" />
-            Tu navegador no soporta el elemento video.
-          </video>
-          <div className="hero-overlay"></div>
-        </div>
         <div className="hero-content">
           <h1>Bienvenido a Místico Store</h1>
           <p>Descubre tecnología de otro mundo</p>
@@ -215,7 +202,7 @@ function App() {
         </div>
       </section>
 
-      {/* Otras secciones... */}
+      {/* Sección Productos */}
       <section id="productos" className="section productos-section">
         <div className="container">
           <div className="section-header">
@@ -227,6 +214,68 @@ function App() {
             usuario={usuario}
             onAgregarCarrito={agregarAlCarrito}
           />
+        </div>
+      </section>
+
+      {/* Sección Categorías */}
+      <section id="categorias" className="section categorias-section">
+        <div className="container">
+          <div className="section-header">
+            <h2>Categorías</h2>
+            <p>Encuentra lo que necesitas</p>
+          </div>
+          <div className="categorias-grid">
+            <div className="categoria-card">
+              <i className="fas fa-laptop"></i>
+              <h3>Tecnología</h3>
+              <p>Laptops, PCs y accesorios</p>
+            </div>
+            <div className="categoria-card">
+              <i className="fas fa-mobile-alt"></i>
+              <h3>Smartphones</h3>
+              <p>Teléfonos y tablets</p>
+            </div>
+            <div className="categoria-card">
+              <i className="fas fa-headphones"></i>
+              <h3>Audio</h3>
+              <p>Auriculares y altavoces</p>
+            </div>
+            <div className="categoria-card">
+              <i className="fas fa-clock"></i>
+              <h3>Wearables</h3>
+              <p>Relojes inteligentes</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sección Ofertas */}
+      <section id="ofertas" className="section ofertas-section">
+        <div className="container">
+          <div className="section-content">
+            <h2>Ofertas Especiales</h2>
+            <p>Descuentos exclusivos por tiempo limitado</p>
+            <a href="#productos" className="btn" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>
+              Ver Ofertas
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Sección Contacto */}
+      <section id="contacto" className="section contacto-section">
+        <div className="container">
+          <div className="section-content">
+            <h2>Contacto</h2>
+            <div className="contacto-info">
+              <p><i className="fas fa-envelope"></i> contacto@misticostore.com</p>
+              <p><i className="fas fa-phone"></i> +52 498 981 5100</p>
+              <p><i className="fas fa-map-marker-alt"></i> Guadalupe, Zacatecas, México</p>
+            </div>
+            <a href="mailto:contacto@misticostore.com" className="btn">
+              Enviar Mensaje
+            </a>
+          </div>
         </div>
       </section>
 
