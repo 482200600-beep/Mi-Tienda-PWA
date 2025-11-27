@@ -38,27 +38,24 @@ body {
   flex-direction: column;
 }
 
-/* Video solo en hero */
+/* Video solo en hero - CORREGIDO */
 .hero-video {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh; /* Solo cubre el viewport */
   z-index: -2;
   overflow: hidden;
 }
 
 .hero-video video {
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 /* Overlay para mejorar legibilidad en hero */
@@ -288,17 +285,18 @@ body {
   color: #7890a7;
 }
 
-/* Secciones con scroll */
+/* Secciones con scroll - FONDOS CORREGIDOS */
 .scroll-section {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 4rem 2rem;
   opacity: 0;
   transform: translateY(50px);
   transition: all 0.8s ease;
   position: relative;
+  z-index: 1; /* Asegura que esté sobre el video */
 }
 
 .scroll-section.visible {
@@ -306,21 +304,25 @@ body {
   transform: translateY(0);
 }
 
-/* Fondos de color ÚNICOS para cada sección */
+/* FONDOS SOLIDOS PARA CADA SECCIÓN - CORREGIDO */
+#inicio {
+  background: transparent; /* El hero tiene video */
+}
+
 #productos {
-  background: rgba(80, 10, 150, 0.9);
+  background: linear-gradient(135deg, #501096 0%, #3c14aa 100%);
 }
 
 #categorias {
-  background: rgba(60, 20, 170, 0.9);
+  background: linear-gradient(135deg, #3c14aa 0%, #5a1ea0 100%);
 }
 
 #ofertas {
-  background: rgba(90, 30, 160, 0.9);
+  background: linear-gradient(135deg, #5a1ea0 0%, #462896 100%);
 }
 
 #contacto {
-  background: rgba(70, 40, 150, 0.9);
+  background: linear-gradient(135deg, #462896 0%, #32187a 100%);
 }
 
 .section-content {
@@ -622,6 +624,8 @@ footer {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 /* Overlay para cuando el menú está abierto */
@@ -716,7 +720,7 @@ footer {
   }
   
   .scroll-section {
-    padding: 1rem;
+    padding: 2rem 1rem;
   }
   
   .products-container {
