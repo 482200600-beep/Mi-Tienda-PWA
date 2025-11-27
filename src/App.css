@@ -1,291 +1,575 @@
-import React, { useState, useEffect } from 'react';
-import { db } from './firebase/config';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
-import './App.css';
-import Login from './components/Login';
-import ProductList from './components/ProductList';
-
-function App() {
-  const [productos, setProductos] = useState([]);
-  const [carrito, setCarrito] = useState([]);
-  const [usuario, setUsuario] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  // Datos de prueba
-  const productosReserva = [
-    {
-      id: "1",
-      nombre: "Laptop Gaming Pro",
-      precio: 1299,
-      descripcion: "Laptop gaming con RTX 4060, 16GB RAM, 1TB SSD",
-      imagen: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop",
-      categoria: "tecnologia"
-    },
-    {
-      id: "2", 
-      nombre: "iPhone 15 Pro",
-      precio: 999,
-      descripcion: "iPhone 15 Pro 128GB, cámara 48MP",
-      imagen: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop",
-      categoria: "smartphones"
-    },
-    {
-      id: "3",
-      nombre: "Auriculares Inalámbricos",
-      precio: 199,
-      descripcion: "Auriculares con cancelación de ruido y 30h de batería",
-      imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
-      categoria: "audio"
-    },
-    {
-      id: "4",
-      nombre: "Smartwatch Pro",
-      precio: 349,
-      descripcion: "Reloj inteligente con monitor de salud y GPS",
-      imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-      categoria: "wearables"
-    }
-  ];
-
-  const obtenerProductos = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'productos'));
-      const productosFirebase = [];
-      
-      querySnapshot.forEach((doc) => {
-        productosFirebase.push({ id: doc.id, ...doc.data() });
-      });
-      
-      setProductos(productosFirebase.length > 0 ? productosFirebase : productosReserva);
-    } catch (error) {
-      console.error('Error:', error);
-      setProductos(productosReserva);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const agregarAlCarrito = async (producto) => {
-    if (!usuario) {
-      alert('Por favor inicia sesión para agregar productos al carrito');
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, 'carrito'), {
-        usuarioId: usuario.sub,
-        productoId: producto.id,
-        productoNombre: producto.nombre,
-        productoPrecio: producto.precio,
-        productoImagen: producto.imagen,
-        cantidad: 1,
-        fecha: new Date().toISOString()
-      });
-      
-      setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
-      alert('✅ Producto agregado al carrito!');
-    } catch (error) {
-      console.error('Error:', error);
-      setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
-      alert('✅ Producto agregado al carrito!');
-    }
-  };
-
-  useEffect(() => {
-    const usuarioGuardado = localStorage.getItem('usuario');
-    if (usuarioGuardado) setUsuario(JSON.parse(usuarioGuardado));
-    obtenerProductos();
-
-    // Navbar scroll effect
-    const handleScroll = () => {
-      const navbar = document.getElementById('navbar');
-      if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-      } else {
-        navbar.classList.remove('scrolled');
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleLogin = (userData) => {
-    setUsuario(userData);
-    localStorage.setItem('usuario', JSON.stringify(userData));
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('usuario');
-    setUsuario(null);
-    setCarrito([]);
-  };
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setMenuOpen(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="App">
-        <div className="loading-screen">
-          <div className="loading-spinner"></div>
-          <h2>Cargando Místico Store...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="App">
-      {/* Navbar */}
-      <nav className="navbar" id="navbar">
-        <a href="#inicio" className="nav-logo" onClick={(e) => { e.preventDefault(); scrollToSection('inicio'); }}>
-          Místico Store
-        </a>
-        
-        <div className={`menu-toggle ${menuOpen ? 'active' : ''}`} onClick={toggleMenu}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        
-        <ul className={`nav-links ${menuOpen ? 'active' : ''}`}>
-          <li><a href="#productos" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>Productos</a></li>
-          <li><a href="#categorias" onClick={(e) => { e.preventDefault(); scrollToSection('categorias'); }}>Categorías</a></li>
-          <li><a href="#ofertas" onClick={(e) => { e.preventDefault(); scrollToSection('ofertas'); }}>Ofertas</a></li>
-          <li><a href="#contacto" onClick={(e) => { e.preventDefault(); scrollToSection('contacto'); }}>Contacto</a></li>
-          <li className="nav-auth">
-            {usuario ? (
-              <div className="usuario-info">
-                <img src={usuario.picture} alt="Avatar" className="usuario-avatar" />
-                <span>Hola, {usuario.given_name}</span>
-                <button onClick={handleLogout} className="login-btn">
-                  <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </button>
-              </div>
-            ) : (
-              <Login onLogin={handleLogin} />
-            )}
-          </li>
-          <li>
-            <button className="btn-carrito">
-              <i className="fas fa-shopping-cart"></i>
-              <span className="carrito-badge">{carrito.length}</span>
-            </button>
-          </li>
-        </ul>
-
-        <div 
-          className={`nav-overlay ${menuOpen ? 'active' : ''}`} 
-          onClick={toggleMenu}
-        ></div>
-      </nav>
-
-      {/* Hero Section con imagen */}
-      <section id="inicio" className="hero">
-        <div className="hero-content">
-          <h1>Bienvenido a Místico Store</h1>
-          <p>Descubre tecnología de otro mundo</p>
-          <a href="#productos" className="btn" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>
-            Explorar Productos
-          </a>
-        </div>
-      </section>
-
-      {/* Sección Productos */}
-      <section id="productos" className="section productos-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>Nuestros Productos</h2>
-            <p>Los mejores productos tecnológicos al mejor precio</p>
-          </div>
-          <ProductList 
-            products={productos}
-            usuario={usuario}
-            onAgregarCarrito={agregarAlCarrito}
-          />
-        </div>
-      </section>
-
-      {/* Sección Categorías */}
-      <section id="categorias" className="section categorias-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>Categorías</h2>
-            <p>Encuentra lo que necesitas</p>
-          </div>
-          <div className="categorias-grid">
-            <div className="categoria-card">
-              <i className="fas fa-laptop"></i>
-              <h3>Tecnología</h3>
-              <p>Laptops, PCs y accesorios</p>
-            </div>
-            <div className="categoria-card">
-              <i className="fas fa-mobile-alt"></i>
-              <h3>Smartphones</h3>
-              <p>Teléfonos y tablets</p>
-            </div>
-            <div className="categoria-card">
-              <i className="fas fa-headphones"></i>
-              <h3>Audio</h3>
-              <p>Auriculares y altavoces</p>
-            </div>
-            <div className="categoria-card">
-              <i className="fas fa-clock"></i>
-              <h3>Wearables</h3>
-              <p>Relojes inteligentes</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sección Ofertas */}
-      <section id="ofertas" className="section ofertas-section">
-        <div className="container">
-          <div className="section-content">
-            <h2>Ofertas Especiales</h2>
-            <p>Descuentos exclusivos por tiempo limitado</p>
-            <a href="#productos" className="btn" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>
-              Ver Ofertas
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Sección Contacto */}
-      <section id="contacto" className="section contacto-section">
-        <div className="container">
-          <div className="section-content">
-            <h2>Contacto</h2>
-            <div className="contacto-info">
-              <p><i className="fas fa-envelope"></i> contacto@misticostore.com</p>
-              <p><i className="fas fa-phone"></i> +52 498 981 5100</p>
-              <p><i className="fas fa-map-marker-alt"></i> Guadalupe, Zacatecas, México</p>
-            </div>
-            <a href="mailto:contacto@misticostore.com" className="btn">
-              Enviar Mensaje
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <footer>
-        <div className="container">
-          <small>&copy; 2024 Místico Store. Todos los derechos reservados.</small>
-        </div>
-      </footer>
-    </div>
-  );
+/* Variables CSS - Paleta Morada */
+:root {
+  --purple-deep: #4A1D96;
+  --purple-medium: #6D28D9;
+  --purple-light: #8B5CF6;
+  --purple-accent: #A78BFA;
+  --purple-soft: #C4B5FD;
+  --dark-bg: #0F0F23;
+  --text-light: #E2E8F0;
+  --text-lighter: #A0AEC0;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
-export default App;
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--dark-bg);
+  color: white;
+  line-height: 1.6;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Navbar */
+.navbar {
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.navbar:not(.scrolled) {
+  background: transparent;
+}
+
+.navbar.scrolled {
+  background: rgba(74, 29, 150, 0.95);
+  box-shadow: var(--shadow);
+}
+
+.nav-logo {
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.nav-links a:hover {
+  background-color: var(--glass-bg);
+}
+
+/* User Info */
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.usuario-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid var(--glass-border);
+}
+
+.login-btn {
+  background: var(--purple-medium);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.login-btn:hover {
+  background: var(--purple-light);
+  transform: scale(1.05);
+}
+
+/* Carrito */
+.btn-carrito {
+  position: relative;
+  background: var(--purple-medium);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-carrito:hover {
+  background: var(--purple-light);
+  transform: scale(1.05);
+}
+
+.carrito-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #EF4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Menu Hamburguesa */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  background: var(--purple-medium);
+  border-radius: 50%;
+  padding: 10px;
+  transition: all 0.3s ease;
+  z-index: 1001;
+}
+
+.menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 2px 0;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.menu-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+.nav-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+.nav-overlay.active {
+  display: block;
+}
+
+/* Hero Section con Imagen */
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  background: linear-gradient(135deg, rgba(74, 29, 150, 0.9), rgba(107, 33, 168, 0.8)),
+              url('/hero-background.jpg') center/cover;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  padding: 2rem;
+  background: var(--glass-bg);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-light);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero p {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--text-lighter);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Botones */
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--purple-light), var(--purple-accent));
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-size: 1.1rem;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--purple-accent), var(--purple-soft));
+}
+
+/* Sections */
+.section {
+  padding: 5rem 0;
+  position: relative;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-light);
+}
+
+.section-header p {
+  font-size: 1.2rem;
+  color: var(--text-lighter);
+}
+
+.section-content {
+  text-align: center;
+}
+
+/* Fondos de secciones */
+.productos-section {
+  background: linear-gradient(135deg, var(--purple-deep), #5B21B6);
+}
+
+.categorias-section {
+  background: linear-gradient(135deg, #5B21B6, var(--purple-medium));
+}
+
+.ofertas-section {
+  background: linear-gradient(135deg, var(--purple-medium), #7C3AED);
+}
+
+.contacto-section {
+  background: linear-gradient(135deg, #7C3AED, var(--purple-light));
+}
+
+/* Product Grid */
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.producto-card {
+  background: var(--glass-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.producto-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.producto-imagen {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.producto-card:hover .producto-imagen {
+  transform: scale(1.05);
+}
+
+.producto-nombre {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+}
+
+.producto-precio {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--purple-accent);
+  margin-bottom: 0.5rem;
+}
+
+.producto-descripcion {
+  color: var(--text-lighter);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.btn-agregar {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--purple-medium), var(--purple-light));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-agregar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  background: linear-gradient(135deg, var(--purple-light), var(--purple-accent));
+}
+
+.btn-agregar:disabled {
+  background: #4B5563;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Categorías Grid */
+.categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.categoria-card {
+  background: var(--glass-bg);
+  padding: 2rem;
+  text-align: center;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+}
+
+.categoria-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-lg);
+}
+
+.categoria-card i {
+  font-size: 3rem;
+  color: var(--purple-accent);
+  margin-bottom: 1rem;
+}
+
+.categoria-card h3 {
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.categoria-card p {
+  color: var(--text-lighter);
+}
+
+/* Contacto */
+.contacto-info {
+  margin-bottom: 2rem;
+}
+
+.contacto-info p {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.contacto-info i {
+  color: var(--purple-accent);
+  width: 20px;
+}
+
+/* Footer */
+footer {
+  background: var(--purple-deep);
+  text-align: center;
+  padding: 2rem 0;
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--glass-border);
+}
+
+/* Loading */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+  background: var(--dark-bg);
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(139, 92, 246, 0.2);
+  border-left: 4px solid var(--purple-light);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    background: rgba(74, 29, 150, 0.98);
+    width: 80%;
+    height: 100vh;
+    flex-direction: column;
+    padding: 80px 2rem 2rem;
+    transition: left 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .nav-links.active {
+    left: 0;
+  }
+
+  .nav-links li {
+    margin: 0.5rem 0;
+    width: 100%;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .nav-auth {
+    margin-top: 1rem;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .productos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .categorias-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+
+  .hero-content {
+    margin: 0 1rem;
+    padding: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
+  }
+}
