@@ -1,14 +1,11 @@
 /* Variables CSS */
 :root {
-  --primary-color: #6a11cb;
-  --primary-dark: #5a0db6;
-  --secondary-color: #2575fc;
-  --accent-color: #ff6b6b;
-  --text-light: #b0c0d1;
-  --text-lighter: #7890a7;
-  --bg-dark: #0a0a0a;
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
+  --purple-deep: #4A1D96;     /* Morado oscuro principal */
+  --purple-medium: #6D28D9;   /* Morado medio */
+  --purple-light: #8B5CF6;    /* Morado claro */
+  --purple-accent: #A78BFA;   /* Morado acento */
+  --purple-soft: #C4B5FD;     /* Morado suave */
+  --dark-bg: #0F0F23;         /* Fondo oscuro */
 }
 
 /* Reset */
