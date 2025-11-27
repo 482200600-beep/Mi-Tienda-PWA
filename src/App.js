@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from './firebase/config';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import './App.css';
 import Login from './components/Login';
-import Carrito from './components/Carrito';
 import ProductList from './components/ProductList';
 
 function App() {
@@ -11,8 +10,6 @@ function App() {
   const [carrito, setCarrito] = useState([]);
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('inicio');
-  const videoRef = useRef(null);
 
   // ✅ OBTENER PRODUCTOS DESDE FIREBASE
   const obtenerProductos = async () => {
@@ -47,8 +44,7 @@ function App() {
       precio: 1299,
       descripcion: "Laptop gaming con RTX 4060, 16GB RAM, 1TB SSD",
       imagen: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&h=300&fit=crop",
-      categoria: "tecnologia",
-      modelo3d: "/models/laptop.glb"
+      categoria: "tecnologia"
     },
     {
       id: "2", 
@@ -56,8 +52,7 @@ function App() {
       precio: 999,
       descripcion: "iPhone 15 Pro 128GB, cámara 48MP",
       imagen: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop",
-      categoria: "smartphones",
-      modelo3d: "/models/iphone.glb"
+      categoria: "smartphones"
     },
     {
       id: "3",
@@ -65,8 +60,7 @@ function App() {
       precio: 199,
       descripcion: "Auriculares con cancelación de ruido y 30h de batería",
       imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
-      categoria: "audio",
-      modelo3d: "/models/headphones.glb"
+      categoria: "audio"
     },
     {
       id: "4",
@@ -74,8 +68,7 @@ function App() {
       precio: 349,
       descripcion: "Reloj inteligente con monitor de salud y GPS",
       imagen: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-      categoria: "wearables",
-      modelo3d: "/models/smartwatch.glb"
+      categoria: "wearables"
     }
   ];
 
@@ -97,30 +90,23 @@ function App() {
         fecha: new Date().toISOString()
       });
       
-      // Actualizar carrito local
       setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
-      
-      // Mostrar notificación elegante
       mostrarNotificacion('✅ Producto agregado al carrito!');
     } catch (error) {
       console.error('Error:', error);
-      // Modo local como fallback
       setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
       mostrarNotificacion('✅ Producto agregado (modo local)');
     }
   };
 
   const mostrarNotificacion = (mensaje) => {
-    // Crear elemento de notificación
     const notificacion = document.createElement('div');
     notificacion.className = 'notificacion';
     notificacion.textContent = mensaje;
     document.body.appendChild(notificacion);
     
-    // Animación de entrada
     setTimeout(() => notificacion.classList.add('show'), 100);
     
-    // Remover después de 3 segundos
     setTimeout(() => {
       notificacion.classList.remove('show');
       setTimeout(() => {
@@ -131,13 +117,12 @@ function App() {
     }, 3000);
   };
 
-  // Observador de intersección para animaciones al hacer scroll
+  // Observador de intersección para animaciones
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          setActiveSection(entry.target.id);
         }
       });
     }, { threshold: 0.3 });
@@ -191,13 +176,12 @@ function App() {
       {/* Video de fondo solo en hero */}
       <div className="hero-video">
         <video 
-          ref={videoRef}
           autoPlay 
           muted 
           loop
-          poster="/img/placeholder.jpg"
+          playsInline
         >
-          <source src="/videos/hero-background.mp4" type="video/mp4" />
+          <source src="/hero-background.mp4" type="video/mp4" />
           Tu navegador no soporta el elemento video.
         </video>
         <div className="hero-overlay"></div>
@@ -257,102 +241,88 @@ function App() {
       </section>
 
       {/* Sección Productos */}
-      <section id="productos" className="scroll-section image-left">
-        <div className="content-wrapper">
-          <div className="text-content">
-            <div className="card">
-              <h2>Nuestros Productos</h2>
-              <p>Explora nuestra selección premium de tecnología y dispositivos innovadores. Cada producto ha sido cuidadosamente seleccionado para ofrecerte la mejor experiencia.</p>
-              <div className="internal-nav">
-                <a href="#tecnologia">Tecnología</a>
-                <a href="#smartphones">Smartphones</a>
-                <a href="#audio">Audio</a>
-                <a href="#wearables">Wearables</a>
-              </div>
+      <section id="productos" className="scroll-section">
+        <div className="section-content">
+          <div className="card">
+            <h2>Nuestros Productos</h2>
+            <p>Explora nuestra selección premium de tecnología y dispositivos innovadores. Cada producto ha sido cuidadosamente seleccionado para ofrecerte la mejor experiencia.</p>
+            <div className="internal-nav">
+              <a href="#tecnologia">Tecnología</a>
+              <a href="#smartphones">Smartphones</a>
+              <a href="#audio">Audio</a>
+              <a href="#wearables">Wearables</a>
             </div>
           </div>
-          <div className="image-content">
-            <div className="model-3d-container" id="model-container-productos">
-              <canvas className="model-3d-canvas" id="model-canvas-productos"></canvas>
-            </div>
+          
+          {/* Lista de productos */}
+          <div className="products-container">
+            <ProductList 
+              products={productos}
+              usuario={usuario}
+              onAgregarCarrito={agregarAlCarrito}
+            />
           </div>
-        </div>
-        
-        {/* Lista de productos */}
-        <div className="products-container">
-          <ProductList 
-            products={productos}
-            usuario={usuario}
-            onAgregarCarrito={agregarAlCarrito}
-          />
         </div>
       </section>
 
       {/* Sección Categorías */}
-      <section id="categorias" className="scroll-section image-right">
-        <div className="content-wrapper">
-          <div className="text-content">
-            <div className="card">
-              <h2>Categorías</h2>
-              <p>Navega por nuestras categorías especializadas para encontrar exactamente lo que necesitas.</p>
-              <ul>
-                <li>🖥️ Tecnología y Computación</li>
-                <li>📱 Smartphones y Tablets</li>
-                <li>🎧 Audio y Sonido</li>
-                <li>⌚ Wearables y Smartwatches</li>
-                <li>🎮 Gaming y Entretenimiento</li>
-                <li>🏠 Hogar Inteligente</li>
-              </ul>
-            </div>
-          </div>
-          <div className="image-content">
-            <div className="model-3d-container" id="model-container-categorias">
-              <canvas className="model-3d-canvas" id="model-canvas-categorias"></canvas>
+      <section id="categorias" className="scroll-section">
+        <div className="section-content">
+          <div className="card">
+            <h2>Categorías</h2>
+            <p>Navega por nuestras categorías especializadas para encontrar exactamente lo que necesitas.</p>
+            <div className="categorias-grid">
+              <div className="categoria-card">
+                <i className="fas fa-laptop"></i>
+                <h3>Tecnología</h3>
+                <p>Laptops, PCs y accesorios</p>
+              </div>
+              <div className="categoria-card">
+                <i className="fas fa-mobile-alt"></i>
+                <h3>Smartphones</h3>
+                <p>Teléfonos y tablets</p>
+              </div>
+              <div className="categoria-card">
+                <i className="fas fa-headphones"></i>
+                <h3>Audio</h3>
+                <p>Auriculares y altavoces</p>
+              </div>
+              <div className="categoria-card">
+                <i className="fas fa-clock"></i>
+                <h3>Wearables</h3>
+                <p>Relojes y bandas inteligentes</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Sección Ofertas */}
-      <section id="ofertas" className="scroll-section image-left">
-        <div className="content-wrapper">
-          <div className="text-content">
-            <div className="card">
-              <h2>Ofertas Especiales</h2>
-              <p>No te pierdas nuestras promociones exclusivas y descuentos limitados en productos seleccionados.</p>
-              <p>¡Solo por tiempo limitado!</p>
-              <a href="#productos" className="btn" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>
-                Ver Ofertas
-              </a>
-            </div>
-          </div>
-          <div className="image-content">
-            <div className="model-3d-container" id="model-container-ofertas">
-              <canvas className="model-3d-canvas" id="model-canvas-ofertas"></canvas>
-            </div>
+      <section id="ofertas" className="scroll-section">
+        <div className="section-content">
+          <div className="card">
+            <h2>Ofertas Especiales</h2>
+            <p>No te pierdas nuestras promociones exclusivas y descuentos limitados en productos seleccionados.</p>
+            <p>¡Solo por tiempo limitado!</p>
+            <a href="#productos" className="btn" onClick={(e) => { e.preventDefault(); scrollToSection('productos'); }}>
+              Ver Ofertas
+            </a>
           </div>
         </div>
       </section>
 
       {/* Sección Contacto */}
-      <section id="contacto" className="scroll-section image-right">
-        <div className="content-wrapper">
-          <div className="text-content">
-            <div className="card">
-              <h2>Contacto</h2>
-              <p><strong>📧 Correo:</strong> contacto@misticostore.com</p>
-              <p><strong>📞 Teléfono:</strong> +52 498 981 5100</p>
-              <p><strong>📍 Ubicación:</strong> Guadalupe, Zacatecas, México</p>
-              <p style={{marginTop: '1rem'}}>¿Tienes preguntas sobre nuestros productos? Contáctanos y te ayudaremos.</p>
-              <a href="mailto:contacto@misticostore.com" className="btn" style={{marginTop: '1rem'}}>
-                Enviar Mensaje
-              </a>
-            </div>
-          </div>
-          <div className="image-content">
-            <div className="model-3d-container" id="model-container-contacto">
-              <canvas className="model-3d-canvas" id="model-canvas-contacto"></canvas>
-            </div>
+      <section id="contacto" className="scroll-section">
+        <div className="section-content">
+          <div className="card">
+            <h2>Contacto</h2>
+            <p><strong>📧 Correo:</strong> contacto@misticostore.com</p>
+            <p><strong>📞 Teléfono:</strong> +52 498 981 5100</p>
+            <p><strong>📍 Ubicación:</strong> Guadalupe, Zacatecas, México</p>
+            <p style={{marginTop: '1rem'}}>¿Tienes preguntas sobre nuestros productos? Contáctanos y te ayudaremos.</p>
+            <a href="mailto:contacto@misticostore.com" className="btn" style={{marginTop: '1rem'}}>
+              Enviar Mensaje
+            </a>
           </div>
         </div>
       </section>
@@ -360,13 +330,6 @@ function App() {
       <footer>
         <small>&copy; 2024 Místico Store. Todos los derechos reservados.</small>
       </footer>
-
-      {/* Componente Carrito */}
-      <Carrito 
-        carrito={carrito}
-        setCarrito={setCarrito}
-        usuario={usuario}
-      />
     </div>
   );
 }
