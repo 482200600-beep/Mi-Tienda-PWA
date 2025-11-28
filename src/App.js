@@ -11,7 +11,7 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   // Datos de prueba
   const productosReserva = [
@@ -192,20 +192,28 @@ function App() {
         ></div>
       </nav>
 
-      {/* Hero Section con Video - PARTE CORREGIDA */}
+      {/* Hero Section con Video - CORREGIDO */}
       <section id="inicio" className="hero">
-        <video 
-          autoPlay 
-          muted 
-          loop 
-          playsInline
-          className="hero-video"
-          onLoadedData={() => setVideoLoaded(true)}
-          onError={() => setVideoLoaded(false)}
-        >
-          <source src={`${process.env.PUBLIC_URL}/hero-background.mp4`} type="video/mp4" />
-          Tu navegador no soporta el elemento video.
-        </video>
+        {!videoError ? (
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            className="hero-video"
+            onError={() => setVideoError(true)}
+            onLoadStart={() => console.log('Video cargando...')}
+            onLoadedData={() => console.log('Video cargado!')}
+          >
+            <source src="/hero-background.mp4" type="video/mp4" />
+            <source src="./hero-background.mp4" type="video/mp4" />
+            Tu navegador no soporta el elemento video.
+          </video>
+        ) : (
+          <div className="hero-fallback">
+            {/* Fallback si el video no carga */}
+          </div>
+        )}
         <div className="hero-content">
           <h1>Bienvenido a Místico Store</h1>
           <p>Descubre tecnología de otro mundo</p>
