@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from './firebase/config';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import './App.css';
@@ -11,7 +11,6 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const videoRef = useRef(null);
 
   // Datos de prueba
   const productosReserva = [
@@ -97,11 +96,6 @@ function App() {
     const usuarioGuardado = localStorage.getItem('usuario');
     if (usuarioGuardado) setUsuario(JSON.parse(usuarioGuardado));
     obtenerProductos();
-
-    // Forzar carga del video
-    if (videoRef.current) {
-      videoRef.current.load();
-    }
 
     // Navbar scroll effect
     const handleScroll = () => {
@@ -197,23 +191,8 @@ function App() {
         ></div>
       </nav>
 
-      {/* Hero Section - VERSION SIMPLIFICADA Y FUNCIONAL */}
+      {/* Hero Section CON IMAGEN DE FONDO - 100% FUNCIONAL */}
       <section id="inicio" className="hero">
-        <div className="video-container">
-          <video 
-            ref={videoRef}
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-            className="hero-video"
-            preload="auto"
-          >
-            <source src="/hero-background.mp4" type="video/mp4" />
-            Tu navegador no soporta videos HTML5.
-          </video>
-        </div>
-        <div className="hero-overlay"></div>
         <div className="hero-content">
           <h1>Bienvenido a Místico Store</h1>
           <p>Descubre tecnología de otro mundo</p>
