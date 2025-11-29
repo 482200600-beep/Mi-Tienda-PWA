@@ -222,7 +222,7 @@ body {
     rgba(74, 29, 150, 0.85) 0%,
     rgba(107, 33, 168, 0.75) 50%,
     rgba(139, 92, 246, 0.65) 100%),
-    url('/mikucoolsinfondo.png') center/cover;
+    url('https://mi-tienda-pwa-ntvj.vercel.app/mikucoolsinfondo.png') center/cover;
 }
 
 .hero-content {
