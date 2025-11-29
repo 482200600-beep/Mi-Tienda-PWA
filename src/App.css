@@ -210,6 +210,7 @@ body {
   display: block;
 }
 
+/* HERO SECTION CORREGIDO */
 .hero {
   height: 100vh;
   display: flex;
@@ -236,8 +237,14 @@ body {
 
 .hero-content {
   position: relative;
-  z-index: 2; /* Asegura que el contenido esté sobre el gradiente */
-  /* el resto de tus estilos... */
+  z-index: 2;
+  max-width: 800px;
+  padding: 3rem;
+  background: var(--glass-bg);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
 }
 
 @keyframes fadeInUp {
