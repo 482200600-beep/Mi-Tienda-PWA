@@ -210,7 +210,7 @@ body {
   display: block;
 }
 
-/* HERO SECTION - VERSIÓN CORREGIDA Y FUNCIONAL */
+/* HERO SECTION - CON IMAGEN ONLINE (100% FUNCIONAL) */
 .hero {
   height: 100vh;
   display: flex;
@@ -225,7 +225,8 @@ body {
       rgba(107, 33, 168, 0.5) 50%,
       rgba(139, 92, 246, 0.4) 100%
     ),
-    url('/mikucoolsinfondo.png') center center / cover no-repeat;
+    url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80') 
+    center center / cover no-repeat;
 }
 
 .hero-content {
