@@ -4,7 +4,6 @@ import { collection, getDocs, addDoc, query, where, deleteDoc, doc, onSnapshot }
 import './App.css';
 import Login from './components/Login';
 import ProductList from './components/ProductList';
-import Carrito from './components/Carrito'; // Nuevo componente
 
 function App() {
   const [productos, setProductos] = useState([]);
@@ -12,7 +11,6 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [carritoOpen, setCarritoOpen] = useState(false); // Estado para mostrar/ocultar carrito
 
   // Datos de prueba
   const productosReserva = [
@@ -68,32 +66,6 @@ function App() {
     }
   };
 
-  // Obtener carrito del usuario desde Firebase
-  const obtenerCarrito = async (usuarioId) => {
-    try {
-      const q = query(
-        collection(db, 'carrito'), 
-        where('usuarioId', '==', usuarioId)
-      );
-      
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const carritoItems = [];
-        querySnapshot.forEach((doc) => {
-          carritoItems.push({ 
-            id: doc.id, 
-            ...doc.data(),
-            productoId: doc.data().productoId || doc.data().id
-          });
-        });
-        setCarrito(carritoItems);
-      });
-
-      return unsubscribe;
-    } catch (error) {
-      console.error('Error obteniendo carrito:', error);
-    }
-  };
-
   const agregarAlCarrito = async (producto) => {
     if (!usuario) {
       alert('Por favor inicia sesión para agregar productos al carrito');
@@ -102,65 +74,47 @@ function App() {
 
     try {
       // Verificar si el producto ya está en el carrito
-      const itemExistente = carrito.find(item => 
-        item.productoId === producto.id || item.id === producto.id
-      );
+      const itemExistente = carrito.find(item => item.id === producto.id);
 
       if (itemExistente) {
         alert('⚠️ Este producto ya está en tu carrito');
         return;
       }
 
-      await addDoc(collection(db, 'carrito'), {
-        usuarioId: usuario.uid || usuario.sub,
-        productoId: producto.id,
-        productoNombre: producto.nombre,
-        productoPrecio: producto.precio,
-        productoImagen: producto.imagen,
-        productoDescripcion: producto.descripcion,
-        cantidad: 1,
-        fecha: new Date().toISOString()
-      });
+      // Si hay Firebase, guardar en la base de datos
+      try {
+        await addDoc(collection(db, 'carrito'), {
+          usuarioId: usuario.uid || usuario.sub,
+          productoId: producto.id,
+          productoNombre: producto.nombre,
+          productoPrecio: producto.precio,
+          productoImagen: producto.imagen,
+          productoDescripcion: producto.descripcion,
+          cantidad: 1,
+          fecha: new Date().toISOString()
+        });
+      } catch (firebaseError) {
+        console.log('Firebase no disponible, usando carrito local');
+      }
       
+      // Agregar al carrito local
+      setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
       alert('✅ Producto agregado al carrito!');
     } catch (error) {
-      console.error('Error agregando al carrito:', error);
-      alert('❌ Error al agregar producto. Intenta nuevamente.');
+      console.error('Error:', error);
+      // Fallback: carrito local
+      setCarrito(prev => [...prev, { ...producto, cantidad: 1 }]);
+      alert('✅ Producto agregado al carrito!');
     }
   };
 
-  const eliminarDelCarrito = async (itemId) => {
-    try {
-      await deleteDoc(doc(db, 'carrito', itemId));
-    } catch (error) {
-      console.error('Error eliminando del carrito:', error);
-      alert('❌ Error al eliminar producto del carrito');
-    }
+  const eliminarDelCarrito = (productoId) => {
+    setCarrito(prev => prev.filter(item => item.id !== productoId));
   };
 
-  const vaciarCarrito = async () => {
-    if (!usuario) return;
-
-    try {
-      const q = query(
-        collection(db, 'carrito'), 
-        where('usuarioId', '==', usuario.uid || usuario.sub)
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const deletePromises = querySnapshot.docs.map(doc => 
-        deleteDoc(doc.ref)
-      );
-      
-      await Promise.all(deletePromises);
-      alert('🗑️ Carrito vaciado');
-    } catch (error) {
-      console.error('Error vaciando carrito:', error);
-    }
-  };
-
-  const calcularTotal = () => {
-    return carrito.reduce((total, item) => total + (item.productoPrecio * item.cantidad), 0);
+  const vaciarCarrito = () => {
+    setCarrito([]);
+    alert('🗑️ Carrito vaciado');
   };
 
   const toggleCarrito = () => {
@@ -168,7 +122,11 @@ function App() {
       alert('Por favor inicia sesión para ver tu carrito');
       return;
     }
-    setCarritoOpen(!carritoOpen);
+    alert(`🛒 Tienes ${carrito.length} productos en el carrito\nTotal: $${calcularTotal()}`);
+  };
+
+  const calcularTotal = () => {
+    return carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0);
   };
 
   useEffect(() => {
@@ -176,11 +134,6 @@ function App() {
     if (usuarioGuardado) {
       const userData = JSON.parse(usuarioGuardado);
       setUsuario(userData);
-      
-      // Obtener carrito cuando hay usuario
-      if (userData.uid || userData.sub) {
-        obtenerCarrito(userData.uid || userData.sub);
-      }
     }
     
     obtenerProductos();
@@ -202,18 +155,12 @@ function App() {
   const handleLogin = (userData) => {
     setUsuario(userData);
     localStorage.setItem('usuario', JSON.stringify(userData));
-    
-    // Obtener carrito después del login
-    if (userData.uid || userData.sub) {
-      obtenerCarrito(userData.uid || userData.sub);
-    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('usuario');
     setUsuario(null);
     setCarrito([]);
-    setCarritoOpen(false);
   };
 
   const toggleMenu = () => {
@@ -284,17 +231,6 @@ function App() {
           onClick={toggleMenu}
         ></div>
       </nav>
-
-      {/* Componente Carrito */}
-      <Carrito 
-        isOpen={carritoOpen}
-        onClose={() => setCarritoOpen(false)}
-        carrito={carrito}
-        onEliminarItem={eliminarDelCarrito}
-        onVaciarCarrito={vaciarCarrito}
-        total={calcularTotal()}
-        usuario={usuario}
-      />
 
       {/* Hero Section */}
       <section id="inicio" className="hero">
