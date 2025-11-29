@@ -210,7 +210,7 @@ body {
   display: block;
 }
 
-/* HERO SECTION CORREGIDO */
+/* HERO SECTION - VERSION SIMPLE Y FUNCIONAL */
 .hero {
   height: 100vh;
   display: flex;
@@ -218,21 +218,7 @@ body {
   justify-content: center;
   text-align: center;
   position: relative;
-  background: url('/mikucoolsinfondo.png') center/cover;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, 
-    rgba(74, 29, 150, 0.7) 0%,
-    rgba(107, 33, 168, 0.5) 50%,
-    rgba(139, 92, 246, 0.4) 100%);
-  z-index: 1;
+  background: linear-gradient(135deg, rgba(74, 29, 150, 0.8), rgba(107, 33, 168, 0.6)), url('/mikucoolsinfondo.png') center/cover;
 }
 
 .hero-content {
@@ -240,28 +226,17 @@ body {
   z-index: 2;
   max-width: 800px;
   padding: 3rem;
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-lg);
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
 .hero h1 {
   font-size: 3.5rem;
   margin-bottom: 1.5rem;
-  color: var(--text-light);
+  color: #E2E8F0;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
   font-weight: 800;
 }
@@ -269,7 +244,7 @@ body {
 .hero p {
   font-size: 1.5rem;
   margin-bottom: 2.5rem;
-  color: var(--text-lighter);
+  color: #A0AEC0;
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
   font-weight: 300;
 }
@@ -278,7 +253,7 @@ body {
 .btn {
   display: inline-block;
   padding: 16px 32px;
-  background: linear-gradient(135deg, var(--purple-light), var(--purple-accent));
+  background: linear-gradient(135deg, #8B5CF6, #A78BFA);
   color: white;
   text-decoration: none;
   border-radius: 12px;
@@ -286,14 +261,14 @@ body {
   transition: all 0.3s ease;
   border: none;
   cursor: pointer;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   font-size: 1.1rem;
 }
 
 .btn:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, var(--purple-accent), var(--purple-soft));
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #A78BFA, #C4B5FD);
 }
 
 /* Sections */
@@ -310,12 +285,12 @@ body {
 .section-header h2 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  color: var(--text-light);
+  color: #E2E8F0;
 }
 
 .section-header p {
   font-size: 1.2rem;
-  color: var(--text-lighter);
+  color: #A0AEC0;
 }
 
 .section-content {
@@ -324,19 +299,19 @@ body {
 
 /* Fondos de secciones */
 .productos-section {
-  background: linear-gradient(135deg, var(--purple-deep), #5B21B6);
+  background: linear-gradient(135deg, #4A1D96, #5B21B6);
 }
 
 .categorias-section {
-  background: linear-gradient(135deg, #5B21B6, var(--purple-medium));
+  background: linear-gradient(135deg, #5B21B6, #6D28D9);
 }
 
 .ofertas-section {
-  background: linear-gradient(135deg, var(--purple-medium), #7C3AED);
+  background: linear-gradient(135deg, #6D28D9, #7C3AED);
 }
 
 .contacto-section {
-  background: linear-gradient(135deg, #7C3AED, var(--purple-light));
+  background: linear-gradient(135deg, #7C3AED, #8B5CF6);
 }
 
 /* Product Grid */
@@ -348,19 +323,19 @@ body {
 }
 
 .producto-card {
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   overflow: hidden;
 }
 
 .producto-card:hover {
   transform: translateY(-8px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   background: rgba(255, 255, 255, 0.15);
 }
 
@@ -381,18 +356,18 @@ body {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: var(--text-light);
+  color: #E2E8F0;
 }
 
 .producto-precio {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--purple-accent);
+  color: #A78BFA;
   margin-bottom: 0.5rem;
 }
 
 .producto-descripcion {
-  color: var(--text-lighter);
+  color: #A0AEC0;
   margin-bottom: 1rem;
   line-height: 1.5;
 }
@@ -400,7 +375,7 @@ body {
 .btn-agregar {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, var(--purple-medium), var(--purple-light));
+  background: linear-gradient(135deg, #6D28D9, #8B5CF6);
   color: white;
   border: none;
   border-radius: 8px;
@@ -415,8 +390,8 @@ body {
 
 .btn-agregar:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
-  background: linear-gradient(135deg, var(--purple-light), var(--purple-accent));
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #8B5CF6, #A78BFA);
 }
 
 .btn-agregar:disabled {
@@ -434,35 +409,35 @@ body {
 }
 
 .categoria-card {
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.1);
   padding: 2rem;
   text-align: center;
   border-radius: 12px;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .categoria-card:hover {
   transform: translateY(-5px);
   background: rgba(255, 255, 255, 0.15);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
 .categoria-card i {
   font-size: 3rem;
-  color: var(--purple-accent);
+  color: #A78BFA;
   margin-bottom: 1rem;
 }
 
 .categoria-card h3 {
-  color: var(--text-light);
+  color: #E2E8F0;
   margin-bottom: 0.5rem;
   font-size: 1.3rem;
 }
 
 .categoria-card p {
-  color: var(--text-lighter);
+  color: #A0AEC0;
 }
 
 /* Contacto */
@@ -480,17 +455,17 @@ body {
 }
 
 .contacto-info i {
-  color: var(--purple-accent);
+  color: #A78BFA;
   width: 20px;
 }
 
 /* Footer */
 footer {
-  background: var(--purple-deep);
+  background: #4A1D96;
   text-align: center;
   padding: 2rem 0;
   backdrop-filter: blur(10px);
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Loading */
@@ -501,14 +476,14 @@ footer {
   justify-content: center;
   height: 100vh;
   gap: 1rem;
-  background: var(--dark-bg);
+  background: #0F0F23;
 }
 
 .loading-spinner {
   width: 50px;
   height: 50px;
   border: 4px solid rgba(139, 92, 246, 0.2);
-  border-left: 4px solid var(--purple-light);
+  border-left: 4px solid #8B5CF6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
