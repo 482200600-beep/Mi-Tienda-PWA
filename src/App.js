@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase/config';
-import { collection, getDocs, addDoc, query, where, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import './App.css';
 import Login from './components/Login';
 import ProductList from './components/ProductList';
+import Carrito from './components/Carrito';
 
 function App() {
   const [productos, setProductos] = useState([]);
@@ -11,6 +12,7 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [carritoOpen, setCarritoOpen] = useState(false);
 
   // Datos de prueba
   const productosReserva = [
@@ -108,13 +110,83 @@ function App() {
     }
   };
 
-  const eliminarDelCarrito = (productoId) => {
+  const eliminarDelCarrito = async (productoId) => {
+    if (!usuario) return;
+
+    try {
+      // Eliminar de Firebase si está disponible
+      const carritoRef = collection(db, 'carrito');
+      const q = query(carritoRef, 
+        where('usuarioId', '==', usuario.uid || usuario.sub),
+        where('productoId', '==', productoId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (document) => {
+        await deleteDoc(doc(db, 'carrito', document.id));
+      });
+    } catch (error) {
+      console.log('Firebase no disponible, eliminando localmente');
+    }
+    
+    // Eliminar del carrito local
     setCarrito(prev => prev.filter(item => item.id !== productoId));
   };
 
-  const vaciarCarrito = () => {
+  const actualizarCantidad = async (productoId, nuevaCantidad) => {
+    if (nuevaCantidad < 1) {
+      eliminarDelCarrito(productoId);
+      return;
+    }
+
+    try {
+      // Actualizar en Firebase si está disponible
+      const carritoRef = collection(db, 'carrito');
+      const q = query(carritoRef, 
+        where('usuarioId', '==', usuario.uid || usuario.sub),
+        where('productoId', '==', productoId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (document) => {
+        await updateDoc(doc(db, 'carrito', document.id), {
+          cantidad: nuevaCantidad
+        });
+      });
+    } catch (error) {
+      console.log('Firebase no disponible, actualizando localmente');
+    }
+
+    // Actualizar localmente
+    setCarrito(prev => 
+      prev.map(item => 
+        item.id === productoId 
+          ? { ...item, cantidad: nuevaCantidad }
+          : item
+      )
+    );
+  };
+
+  const vaciarCarrito = async () => {
+    if (!usuario) return;
+
+    try {
+      // Vaciar en Firebase
+      const carritoRef = collection(db, 'carrito');
+      const q = query(carritoRef, 
+        where('usuarioId', '==', usuario.uid || usuario.sub)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (document) => {
+        await deleteDoc(doc(db, 'carrito', document.id));
+      });
+    } catch (error) {
+      console.log('Firebase no disponible, vaciando localmente');
+    }
+
+    // Vaciar localmente
     setCarrito([]);
-    alert('🗑️ Carrito vaciado');
   };
 
   const toggleCarrito = () => {
@@ -122,7 +194,7 @@ function App() {
       alert('Por favor inicia sesión para ver tu carrito');
       return;
     }
-    alert(`🛒 Tienes ${carrito.length} productos en el carrito\nTotal: $${calcularTotal()}`);
+    setCarritoOpen(!carritoOpen);
   };
 
   const calcularTotal = () => {
@@ -319,6 +391,18 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* Carrito Sidebar */}
+      {carritoOpen && (
+        <Carrito
+          carrito={carrito}
+          total={calcularTotal()}
+          onActualizarCantidad={actualizarCantidad}
+          onEliminarItem={eliminarDelCarrito}
+          onVaciarCarrito={vaciarCarrito}
+          onCerrar={() => setCarritoOpen(false)}
+        />
+      )}
 
       <footer>
         <div className="container">
