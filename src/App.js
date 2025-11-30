@@ -68,6 +68,59 @@ function App() {
     }
   };
 
+  // Función para cargar el carrito desde Firebase
+  const cargarCarritoDesdeFirebase = async (usuario) => {
+    if (!usuario) return;
+    
+    try {
+      console.log('🔍 Buscando carrito para usuario:', usuario.uid || usuario.sub);
+      
+      const carritoRef = collection(db, 'carrito');
+      const q = query(carritoRef, 
+        where('usuarioId', '==', usuario.uid || usuario.sub)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      console.log('📦 Documentos encontrados en Firebase:', querySnapshot.size);
+      
+      const carritoFirebase = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log('📄 Documento Firebase:', data);
+        
+        // BUSCAR el producto completo en tu lista de productos
+        const productoCompleto = productos.find(p => p.id === data.productoId);
+        console.log('🔍 Producto encontrado en lista:', productoCompleto);
+        
+        if (productoCompleto) {
+          carritoFirebase.push({
+            ...productoCompleto,  // Incluye TODOS los datos del producto
+            cantidad: data.cantidad,
+            firebaseDocId: doc.id  // Guardamos el ID del documento de Firebase
+          });
+        } else {
+          // Fallback: si no encuentra el producto, usa los datos básicos de Firebase
+          carritoFirebase.push({
+            id: data.productoId,
+            nombre: data.productoNombre,
+            precio: data.productoPrecio,
+            imagen: data.productoImagen,
+            descripcion: data.productoDescripcion,
+            categoria: data.productoCategoria || 'general',
+            cantidad: data.cantidad,
+            firebaseDocId: doc.id
+          });
+        }
+      });
+      
+      setCarrito(carritoFirebase);
+      console.log('✅ Carrito cargado desde Firebase:', carritoFirebase.length, 'productos');
+    } catch (error) {
+      console.error('❌ Error cargando carrito desde Firebase:', error);
+    }
+  };
+
   const agregarAlCarrito = async (producto) => {
     if (!usuario) {
       alert('Por favor inicia sesión para agregar productos al carrito');
@@ -92,9 +145,11 @@ function App() {
           productoPrecio: producto.precio,
           productoImagen: producto.imagen,
           productoDescripcion: producto.descripcion,
+          productoCategoria: producto.categoria,
           cantidad: 1,
           fecha: new Date().toISOString()
         });
+        console.log('✅ Producto guardado en Firebase');
       } catch (firebaseError) {
         console.log('Firebase no disponible, usando carrito local');
       }
@@ -125,6 +180,7 @@ function App() {
       querySnapshot.forEach(async (document) => {
         await deleteDoc(doc(db, 'carrito', document.id));
       });
+      console.log('🗑️ Producto eliminado de Firebase');
     } catch (error) {
       console.log('Firebase no disponible, eliminando localmente');
     }
@@ -153,6 +209,7 @@ function App() {
           cantidad: nuevaCantidad
         });
       });
+      console.log('🔄 Cantidad actualizada en Firebase:', nuevaCantidad);
     } catch (error) {
       console.log('Firebase no disponible, actualizando localmente');
     }
@@ -181,6 +238,7 @@ function App() {
       querySnapshot.forEach(async (document) => {
         await deleteDoc(doc(db, 'carrito', document.id));
       });
+      console.log('🧹 Carrito vaciado en Firebase');
     } catch (error) {
       console.log('Firebase no disponible, vaciando localmente');
     }
@@ -208,7 +266,20 @@ function App() {
       setUsuario(userData);
     }
     
-    obtenerProductos();
+    // Primero cargar productos, luego el carrito
+    const inicializar = async () => {
+      await obtenerProductos();
+      
+      if (usuarioGuardado) {
+        const userData = JSON.parse(usuarioGuardado);
+        // Pequeño delay para asegurar que los productos estén cargados
+        setTimeout(() => {
+          cargarCarritoDesdeFirebase(userData);
+        }, 500);
+      }
+    };
+    
+    inicializar();
 
     // Navbar scroll effect
     const handleScroll = () => {
@@ -224,9 +295,14 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogin = (userData) => {
+  const handleLogin = async (userData) => {
     setUsuario(userData);
     localStorage.setItem('usuario', JSON.stringify(userData));
+    
+    // Esperar a que los productos se carguen y luego cargar el carrito
+    setTimeout(() => {
+      cargarCarritoDesdeFirebase(userData);
+    }, 1000);
   };
 
   const handleLogout = () => {
